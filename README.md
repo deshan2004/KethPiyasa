@@ -21,7 +21,7 @@ KethPiyasa is a full-stack B2B digital marketplace engineered to streamline Sri 
 
 | Layer | Technology |
 | :--- | :--- |
-| **Frontend** | Next.js (TypeScript), React |
+| **Frontend** | Next.js (TypeScript) |
 | **Styling** | Tailwind CSS (Mobile-First Architecture) |
 | **Backend API** | Node.js, Express.js |
 | **Database & Realtime** | Firebase Firestore |
