@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/lib/store';
+import { useAuth } from '@/lib/auth';
 import { getTranslation } from '@/lib/i18n';
 import { UserRole, Language } from '@/lib/types';
 import { 
@@ -14,14 +15,17 @@ import {
   Globe, 
   UserCheck, 
   TrendingUp,
-  Search,
+  LogIn,
+  LogOut,
   CheckCircle2
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { role, setRole, lang, setLang } = useApp();
+  const { user, logout } = useAuth();
   const t = getTranslation(lang);
   const pathname = usePathname();
+  const router = useRouter();
 
   const roleConfigs: { role: UserRole; label: string; icon: React.ReactNode; color: string }[] = [
     { role: 'farmer', label: t.roleFarmer, icon: <Sprout className="w-3.5 h-3.5" />, color: 'bg-[#064e3b] text-white' },
@@ -29,6 +33,19 @@ export const Navbar: React.FC = () => {
     { role: 'logistics', label: t.roleLogistics, icon: <Truck className="w-3.5 h-3.5" />, color: 'bg-blue-600 text-white' },
     { role: 'admin', label: t.roleAdmin, icon: <ShieldCheck className="w-3.5 h-3.5" />, color: 'bg-indigo-600 text-white' },
   ];
+
+  const handleRoleSwitch = (newRole: UserRole) => {
+    setRole(newRole);
+    const route =
+      newRole === 'farmer'
+        ? '/farmer'
+        : newRole === 'buyer'
+        ? '/buyer'
+        : newRole === 'logistics'
+        ? '/logistics'
+        : '/admin';
+    router.push(route);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
@@ -51,7 +68,7 @@ export const Navbar: React.FC = () => {
               return (
                 <button
                   key={r.role}
-                  onClick={() => setRole(r.role)}
+                  onClick={() => handleRoleSwitch(r.role)}
                   className={`flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
                     isActive ? r.color + ' shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
@@ -63,7 +80,7 @@ export const Navbar: React.FC = () => {
             })}
           </div>
 
-          {/* Language Switcher */}
+          {/* Language Selector */}
           <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md text-xs border border-slate-200">
             <Globe className="w-3.5 h-3.5 text-[#064e3b]" />
             <select
@@ -79,7 +96,7 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Navigation matching mockup */}
+      {/* Main Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2 group">
@@ -92,7 +109,7 @@ export const Navbar: React.FC = () => {
           </div>
         </Link>
 
-        {/* Navigation Links */}
+        {/* Role-Specific Portal Links */}
         <nav className="hidden lg:flex items-center gap-1 text-xs font-semibold">
           <Link
             href="/"
@@ -140,23 +157,39 @@ export const Navbar: React.FC = () => {
           </Link>
         </nav>
 
-        {/* User Identity & CTA */}
+        {/* User Identity & Auth Buttons */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200 text-xs">
-            <UserCheck className="w-3.5 h-3.5 text-[#064e3b]" />
-            <div className="text-left">
-              <span className="font-semibold text-slate-800 block text-[11px]">Dambulla Central</span>
-              <span className="text-[9px] text-slate-500">ID: OTH/IT/0009</span>
-            </div>
-          </div>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200 text-xs">
+                <UserCheck className="w-3.5 h-3.5 text-[#064e3b]" />
+                <div className="text-left">
+                  <span className="font-bold text-slate-800 block text-[11px]">{user.name}</span>
+                  <span className="text-[9px] text-[#064e3b] font-semibold uppercase">{user.role} • NIC Verified</span>
+                </div>
+              </div>
 
-          <Link
-            href={role === 'farmer' ? '/farmer' : '/buyer'}
-            className="flex items-center gap-1.5 bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm transition-all"
-          >
-            <TrendingUp className="w-3.5 h-3.5" />
-            <span>{role === 'farmer' ? t.postHarvest : t.enterMarketplace}</span>
-          </Link>
+              <button
+                onClick={() => {
+                  logout();
+                  router.push('/login');
+                }}
+                className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1.5 rounded-lg transition-all"
+                title="Log Out"
+              >
+                <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm transition-all"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Login / Register</span>
+            </Link>
+          )}
         </div>
       </div>
     </header>

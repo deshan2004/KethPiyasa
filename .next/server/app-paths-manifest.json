@@ -5,6 +5,8 @@
   "/buyer/page": "app/buyer/page.js",
   "/farmer/page": "app/farmer/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/login/page": "app/login/page.js",
   "/logistics/page": "app/logistics/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/register/page": "app/register/page.js"
 }

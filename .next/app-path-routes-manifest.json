@@ -5,6 +5,8 @@
   "/buyer/page": "/buyer",
   "/farmer/page": "/farmer",
   "/favicon.ico/route": "/favicon.ico",
+  "/login/page": "/login",
   "/logistics/page": "/logistics",
-  "/page": "/"
+  "/page": "/",
+  "/register/page": "/register"
 }
