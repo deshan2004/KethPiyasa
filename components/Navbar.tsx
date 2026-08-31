@@ -7,6 +7,7 @@ import { useApp } from '@/lib/store';
 import { useAuth } from '@/lib/auth';
 import { getTranslation } from '@/lib/i18n';
 import { Language } from '@/lib/types';
+import { ProfileVerificationModal } from './ProfileVerificationModal';
 import { 
   Sprout, 
   ShoppingBag, 
@@ -21,7 +22,8 @@ import {
   X,
   ChevronRight,
   Store,
-  UserPlus
+  UserPlus,
+  User
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -31,6 +33,7 @@ export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   const getPortalLinkForRole = () => {
     if (!user) return null;
@@ -67,25 +70,24 @@ export const Navbar: React.FC = () => {
             {/* Logged In User Profile Summary */}
             {user ? (
               <div className="flex items-center gap-2">
-                <Link
-                  href={
-                    user.role === 'farmer' ? '/farmer' : user.role === 'buyer' ? '/buyer' : user.role === 'logistics' ? '/logistics' : '/admin'
-                  }
-                  className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg border border-slate-700 text-[11px] transition-colors"
+                <button
+                  onClick={() => setProfileModalOpen(true)}
+                  className="flex items-center gap-1.5 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-800 text-[11px] font-semibold transition-colors cursor-pointer"
+                  title="View Identity & Bank Verification Profile"
                 >
                   <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
                   <span className="font-bold">{user.name}</span>
-                  <span className="bg-emerald-950 text-emerald-300 font-extrabold text-[9px] px-1.5 py-0.2 rounded-md uppercase tracking-wider">
-                    {user.role}
+                  <span className="bg-emerald-900 text-white font-extrabold text-[9px] px-1.5 py-0.2 rounded-md uppercase tracking-wider">
+                    {user.role} Profile
                   </span>
-                </Link>
+                </button>
 
                 <button
                   onClick={() => {
                     logout();
                     router.push('/login');
                   }}
-                  className="flex items-center gap-1 text-slate-400 hover:text-rose-400 text-[11px] font-semibold transition-colors px-1"
+                  className="flex items-center gap-1 text-slate-400 hover:text-rose-400 text-[11px] font-semibold transition-colors px-1 cursor-pointer"
                   title="Logout"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -206,16 +208,19 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center gap-2 sm:gap-3">
           {user ? (
             <div className="flex items-center gap-2">
-              <Link
-                href={userPortal?.href || '/'}
-                className="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs hover:border-emerald-300 transition-colors"
+              <button
+                onClick={() => setProfileModalOpen(true)}
+                className="hidden sm:flex items-center gap-2 bg-slate-50 hover:bg-emerald-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-emerald-300 text-xs transition-all cursor-pointer text-left"
+                title="Open Profile & Verification Center"
               >
                 <UserCheck className="w-3.5 h-3.5 text-[#064e3b]" />
                 <div className="text-left">
                   <span className="font-bold text-slate-800 block text-[11px] leading-tight">{user.name}</span>
-                  <span className="text-[9px] text-[#064e3b] font-bold uppercase tracking-wider">{user.role} • Verified</span>
+                  <span className="text-[9px] text-[#064e3b] font-bold uppercase tracking-wider">
+                    {user.role} • Profile Verification
+                  </span>
                 </div>
-              </Link>
+              </button>
 
               <button
                 onClick={() => {
@@ -265,29 +270,42 @@ export const Navbar: React.FC = () => {
           {/* User Info / Mobile Login Button */}
           <div className="pt-1">
             {user ? (
-              <div className="flex items-center justify-between p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-[#064e3b] text-white flex items-center justify-center font-bold text-sm shadow-xs">
-                    {user.name.charAt(0)}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-[#064e3b] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div>
+                      <span className="font-bold text-slate-900 block text-sm">{user.name}</span>
+                      <span className="text-[10px] font-bold text-[#064e3b] uppercase tracking-wider bg-emerald-100 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                        {user.role} • Verified
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-bold text-slate-900 block text-sm">{user.name}</span>
-                    <span className="text-[10px] font-bold text-[#064e3b] uppercase tracking-wider bg-emerald-100 px-2 py-0.5 rounded-full inline-block mt-0.5">
-                      {user.role} • Verified
-                    </span>
-                  </div>
+
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                      router.push('/login');
+                    }}
+                    className="flex items-center gap-1 text-xs font-bold text-rose-600 bg-white px-3 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 shadow-2xs"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Logout</span>
+                  </button>
                 </div>
 
                 <button
                   onClick={() => {
-                    logout();
+                    setProfileModalOpen(true);
                     setMobileMenuOpen(false);
-                    router.push('/login');
                   }}
-                  className="flex items-center gap-1 text-xs font-bold text-rose-600 bg-white px-3 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 shadow-2xs"
+                  className="w-full flex items-center justify-center gap-2 bg-[#064e3b] text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs cursor-pointer"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Logout</span>
+                  <UserCheck className="w-4 h-4" />
+                  <span>Open Identity & Bank Verification Profile</span>
                 </button>
               </div>
             ) : (
@@ -400,6 +418,12 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Identity & Bank Verification Modal */}
+      <ProfileVerificationModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </header>
   );
 };

@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (emailOrPhone: string, role: UserRole) => void;
   register: (profileData: Omit<UserProfile, 'id' | 'verified'>) => void;
+  updateProfile: (updatedData: Partial<UserProfile>) => void;
   logout: () => void;
 }
 
@@ -24,7 +25,10 @@ export const defaultProfiles: Record<UserRole, UserProfile> = {
       bankName: 'Commercial Bank of Ceylon',
       accountNumber: '8001928374',
       branchName: 'Nuwara Eliya Branch',
+      verified: true,
     },
+    nicVerified: true,
+    bankVerified: true,
     verified: true,
   },
   buyer: {
@@ -38,7 +42,10 @@ export const defaultProfiles: Record<UserRole, UserProfile> = {
       bankName: 'Hatton National Bank',
       accountNumber: '1002938475',
       branchName: 'Head Office Colombo',
+      verified: true,
     },
+    nicVerified: true,
+    bankVerified: true,
     verified: true,
   },
   logistics: {
@@ -52,7 +59,10 @@ export const defaultProfiles: Record<UserRole, UserProfile> = {
       bankName: 'Sampath Bank PLC',
       accountNumber: '0092817263',
       branchName: 'Welisara Hub Branch',
+      verified: true,
     },
+    nicVerified: true,
+    bankVerified: true,
     verified: true,
   },
   admin: {
@@ -66,7 +76,10 @@ export const defaultProfiles: Record<UserRole, UserProfile> = {
       bankName: 'Central Bank of Sri Lanka',
       accountNumber: '0000111222',
       branchName: 'Colombo HQ',
+      verified: true,
     },
+    nicVerified: true,
+    bankVerified: true,
     verified: true,
   },
 };
@@ -134,6 +147,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateProfile = (updatedData: Partial<UserProfile>) => {
+    if (!user) return;
+    const updated = { ...user, ...updatedData };
+    setUser(updated);
+    try {
+      localStorage.setItem('kp_auth_user', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
   const logout = () => {
     setUser(null);
     try {
@@ -150,6 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         login,
         register,
+        updateProfile,
         logout,
       }}
     >

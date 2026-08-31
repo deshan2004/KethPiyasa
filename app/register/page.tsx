@@ -18,9 +18,6 @@ export default function RegisterPage() {
   const [nicOrBrn, setNicOrBrn] = useState('');
   const [phone, setPhone] = useState('');
   const [district, setDistrict] = useState('Nuwara Eliya');
-  const [bankName, setBankName] = useState('Commercial Bank of Ceylon');
-  const [accountNumber, setAccountNumber] = useState('');
-  const [branchName, setBranchName] = useState('Main Branch');
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +29,13 @@ export default function RegisterPage() {
       phone: phone || '+94 77 000 1122',
       district,
       bankAccount: {
-        bankName,
-        accountNumber: accountNumber || '8001928374',
-        branchName,
+        bankName: '',
+        accountNumber: '',
+        branchName: '',
+        verified: false,
       },
+      nicVerified: true,
+      bankVerified: false,
     });
 
     // Automatically route to the registered interface
@@ -169,31 +169,9 @@ export default function RegisterPage() {
             </select>
           </div>
 
-          {/* Bank Account Details */}
-          <div className="border-t border-slate-100 pt-3 space-y-2">
-            <span className="font-bold text-slate-800 block text-xs">Bank Settlement Account Details</span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-slate-600 block mb-1">Bank Name</label>
-                <input
-                  type="text"
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-xs text-slate-900"
-                />
-              </div>
-
-              <div>
-                <label className="text-slate-600 block mb-1">Account Number</label>
-                <input
-                  type="text"
-                  value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value)}
-                  placeholder="8001928374"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-xs text-slate-900"
-                />
-              </div>
-            </div>
+          <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-emerald-900 text-[11px] flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+            <span>Bank settlement accounts & additional identity documents can be added/verified anytime from your Profile Verification Center after log in.</span>
           </div>
         </div>
 
