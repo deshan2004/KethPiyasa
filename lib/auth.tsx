@@ -12,7 +12,7 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const defaultProfiles: Record<UserRole, UserProfile> = {
+export const defaultProfiles: Record<UserRole, UserProfile> = {
   farmer: {
     id: 'usr-farmer-01',
     name: 'Bandara Organic Farms',
@@ -75,7 +75,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { setRole } = useApp();
-  const [user, setUser] = useState<UserProfile | null>(defaultProfiles.buyer);
+  const [user, setUser] = useState<UserProfile | null>(defaultProfiles.farmer);
 
   useEffect(() => {
     try {
@@ -84,16 +84,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const parsed = JSON.parse(savedAuth);
         setUser(parsed);
         setRole(parsed.role);
+      } else {
+        // Default initial session to farmer
+        setUser(defaultProfiles.farmer);
+        setRole('farmer');
       }
     } catch {
-      // ignore localstorage error
+      setUser(defaultProfiles.farmer);
     }
   }, [setRole]);
 
   const login = (emailOrPhone: string, selectedRole: UserRole) => {
     const profile = defaultProfiles[selectedRole] || {
       id: `usr-${Date.now()}`,
-      name: emailOrPhone.includes('@') ? emailOrPhone.split('@')[0] : 'Sri Lanka User',
+      name: emailOrPhone.includes('@') ? emailOrPhone.split('@')[0] : 'Sri Lanka Registered User',
       role: selectedRole,
       nicOrBrn: '891029384V',
       phone: emailOrPhone,
@@ -112,13 +116,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = (profileData: Omit<UserProfile, 'id' | 'verified'>) => {
+    // Prevent registering as admin
+    const safeRole: UserRole = profileData.role === 'admin' ? 'farmer' : profileData.role;
+    
     const newProfile: UserProfile = {
       ...profileData,
+      role: safeRole,
       id: `usr-${Date.now()}`,
       verified: true,
     };
+
     setUser(newProfile);
-    setRole(profileData.role);
+    setRole(safeRole);
     try {
       localStorage.setItem('kp_auth_user', JSON.stringify(newProfile));
     } catch {

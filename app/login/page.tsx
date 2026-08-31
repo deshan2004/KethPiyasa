@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { UserRole } from '@/lib/types';
@@ -14,221 +14,260 @@ import {
   Mail,
   ArrowRight,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  KeyRound,
+  UserCheck
 } from 'lucide-react';
 
 function LoginFormContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/';
-
   const { login } = useAuth();
-  const [selectedRole, setSelectedRole] = useState<UserRole>('buyer');
+  
+  const [activeTab, setActiveTab] = useState<'user' | 'admin'>('user');
+  const [selectedRole, setSelectedRole] = useState<'farmer' | 'buyer' | 'logistics'>('farmer');
   const [loginMethod, setLoginMethod] = useState<'mobile' | 'email'>('mobile');
   const [phoneOrEmail, setPhoneOrEmail] = useState('+94 77 123 4567');
-  const [otpOrPass, setOtpOrPass] = useState('892019');
   const [nicOrBrn, setNicOrBrn] = useState('781920394V');
+  const [adminNic, setAdminNic] = useState('GOV-SL-89201');
+  const [adminPass, setAdminPass] = useState('admin123');
   const [otpSent, setOtpSent] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSendOtp = () => {
-    if (!phoneOrEmail) {
-      setErrorMsg('Please enter a valid Sri Lankan mobile number or email.');
-      return;
-    }
-    setErrorMsg('');
-    setOtpSent(true);
-  };
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleUserLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     login(phoneOrEmail, selectedRole);
 
-    const targetRoute =
-      selectedRole === 'farmer'
-        ? '/farmer'
-        : selectedRole === 'buyer'
-        ? '/buyer'
-        : selectedRole === 'logistics'
-        ? '/logistics'
-        : '/admin';
-
+    const targetRoute = selectedRole === 'farmer' ? '/farmer' : selectedRole === 'buyer' ? '/buyer' : '/logistics';
     router.push(targetRoute);
   };
 
-  const roleDetails: Record<UserRole, { title: string; desc: string; icon: React.ReactNode; color: string }> = {
-    farmer: {
-      title: 'Farmer Producer (ගොවි ද්වාරය)',
-      desc: 'Post crops, receive direct buyer quotations, counter-offer, and track bank payouts.',
-      icon: <Sprout className="w-5 h-5 text-white" />,
+  const handleAdminLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminNic !== 'GOV-SL-89201' && adminNic !== 'admin@kethpiyasa.lk') {
+      setErrorMsg('Invalid Database Admin Credentials. Access restricted to verified system governance personnel.');
+      return;
+    }
+    setErrorMsg('');
+    login('+94 66 222 3344', 'admin');
+    router.push('/admin');
+  };
+
+  const userRolesList: { key: 'farmer' | 'buyer' | 'logistics'; title: string; subtitle: string; icon: React.ReactNode; color: string }[] = [
+    {
+      key: 'farmer',
+      title: 'Farmer Producer',
+      subtitle: 'ගොවි ද්වාරය',
+      icon: <Sprout className="w-5 h-5" />,
       color: 'bg-[#064e3b] text-white',
     },
-    buyer: {
-      title: 'Commercial Buyer (වාණිජ මිලදී ගන්නා)',
-      desc: 'Search bulk crops, verify quality grades, request quotes, and secure escrow deposits.',
-      icon: <ShoppingBag className="w-5 h-5 text-white" />,
+    {
+      key: 'buyer',
+      title: 'Commercial Buyer',
+      subtitle: 'වාණිජ මිලදී ගන්නා',
+      icon: <ShoppingBag className="w-5 h-5" />,
       color: 'bg-amber-600 text-white',
     },
-    logistics: {
-      title: 'Logistics Hauler (ප්‍රවාහන පාර්ශවකරු)',
-      desc: 'View available freight jobs, update route checkpoints, and verify QR deliveries.',
-      icon: <Truck className="w-5 h-5 text-white" />,
+    {
+      key: 'logistics',
+      title: 'Logistics Partner',
+      subtitle: 'ප්‍රවාහන පාර්ශවය',
+      icon: <Truck className="w-5 h-5" />,
       color: 'bg-blue-600 text-white',
     },
-    admin: {
-      title: 'System Admin (පරිපාලක ද්වාරය)',
-      desc: 'Verify identity records, monitor escrow ledgers, moderate disputes, and set market prices.',
-      icon: <ShieldCheck className="w-5 h-5 text-white" />,
-      color: 'bg-indigo-600 text-white',
-    },
-  };
+  ];
 
   return (
     <div className="max-w-xl mx-auto py-8 px-4 space-y-6">
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 bg-[#064e3b] text-white text-xs font-bold px-3 py-1 rounded-full shadow-2xs">
+        <div className="inline-flex items-center gap-2 bg-[#064e3b] text-white text-xs font-bold px-3.5 py-1 rounded-full shadow-xs">
           <Sprout className="w-4 h-4" />
-          <span>kethpiyasa (KethPiyasa) Role-Based Auth</span>
+          <span>KethPiyasa Role-Based Portal Auth</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Select Role & Log In</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Sign In to Your Account</h1>
         <p className="text-xs text-slate-500">
-          Access your personalized B2B portal interface with verified NIC / BR identity.
+          Access your verified B2B trading interface with NIC / BR credentials.
         </p>
       </div>
 
-      {/* Role Selection Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-2xs text-xs font-bold">
-        {(Object.keys(roleDetails) as UserRole[]).map((rKey) => {
-          const isSelected = selectedRole === rKey;
-          return (
+      {/* Main Tab Switcher: Normal User vs Database Admin */}
+      <div className="grid grid-cols-2 p-1 bg-slate-200/70 rounded-xl text-xs font-extrabold gap-1">
+        <button
+          onClick={() => { setActiveTab('user'); setErrorMsg(''); }}
+          className={`py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all ${
+            activeTab === 'user'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <UserCheck className="w-4 h-4 text-[#064e3b]" />
+          <span>Standard Account Sign In</span>
+        </button>
+
+        <button
+          onClick={() => { setActiveTab('admin'); setErrorMsg(''); }}
+          className={`py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all ${
+            activeTab === 'admin'
+              ? 'bg-[#042e23] text-amber-300 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4 text-amber-400" />
+          <span>Database Admin Login</span>
+        </button>
+      </div>
+
+      {activeTab === 'user' ? (
+        <form onSubmit={handleUserLoginSubmit} className="bg-white border border-slate-200 p-6 rounded-2xl space-y-4 shadow-sm text-xs">
+          {errorMsg && (
+            <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl text-rose-700 font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {/* Role Choice */}
+          <div className="space-y-1.5">
+            <label className="text-slate-800 font-bold block">Select Your Registered Account Role</label>
+            <div className="grid grid-cols-3 gap-2">
+              {userRolesList.map((r) => {
+                const isSelected = selectedRole === r.key;
+                return (
+                  <button
+                    type="button"
+                    key={r.key}
+                    onClick={() => setSelectedRole(r.key)}
+                    className={`p-3 rounded-xl flex flex-col items-center gap-1.5 transition-all text-center ${
+                      isSelected
+                        ? r.color + ' shadow-sm font-bold scale-102'
+                        : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+                    }`}
+                  >
+                    {r.icon}
+                    <span className="font-extrabold text-[11px]">{r.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Login Method Toggle */}
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3 pt-1">
             <button
-              key={rKey}
-              onClick={() => setSelectedRole(rKey)}
-              className={`p-3 rounded-xl flex flex-col items-center gap-1.5 transition-all text-center ${
-                isSelected
-                  ? roleDetails[rKey].color + ' shadow-sm scale-105'
-                  : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+              type="button"
+              onClick={() => setLoginMethod('mobile')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+                loginMethod === 'mobile' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              {roleDetails[rKey].icon}
-              <span className="capitalize">{rKey}</span>
+              <Smartphone className="w-3.5 h-3.5" /> Mobile OTP
             </button>
-          );
-        })}
-      </div>
-
-      {/* Selected Role Summary Banner */}
-      <div className="bg-white border border-slate-200 p-4 rounded-2xl space-y-1 shadow-2xs">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#064e3b]"></span>
-          <h3 className="font-bold text-slate-900 text-sm">{roleDetails[selectedRole].title}</h3>
-        </div>
-        <p className="text-xs text-slate-500 leading-relaxed">{roleDetails[selectedRole].desc}</p>
-      </div>
-
-      {/* Login Form */}
-      <form onSubmit={handleLoginSubmit} className="bg-white border border-slate-200 p-6 rounded-2xl space-y-4 shadow-sm text-xs">
-        {errorMsg && (
-          <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl text-rose-700 font-semibold flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMsg}</span>
+            <button
+              type="button"
+              onClick={() => setLoginMethod('email')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+                loginMethod === 'email' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5" /> Email & Password
+            </button>
           </div>
-        )}
 
-        {/* Login Method Toggle */}
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <button
-            type="button"
-            onClick={() => setLoginMethod('mobile')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
-              loginMethod === 'mobile' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" /> Mobile SMS OTP
-          </button>
-          <button
-            type="button"
-            onClick={() => setLoginMethod('email')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
-              loginMethod === 'email' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            <Mail className="w-3.5 h-3.5" /> Email & Password
-          </button>
-        </div>
-
-        {/* Input fields */}
-        <div className="space-y-3">
-          <div>
-            <label className="text-slate-700 font-semibold block mb-1">
-              {loginMethod === 'mobile' ? 'Mobile Phone Number (+94)' : 'Corporate / Personal Email'}
-            </label>
-            <div className="flex gap-2">
+          <div className="space-y-3">
+            <div>
+              <label className="text-slate-700 font-semibold block mb-1">
+                {loginMethod === 'mobile' ? 'Mobile Phone (+94)' : 'Email Address'}
+              </label>
               <input
                 type={loginMethod === 'mobile' ? 'tel' : 'email'}
                 value={phoneOrEmail}
                 onChange={(e) => setPhoneOrEmail(e.target.value)}
-                placeholder={loginMethod === 'mobile' ? '+94 77 123 4567' : 'user@kethpiyasa.lk'}
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
+                placeholder="+94 77 123 4567"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-900 focus:outline-none focus:border-[#064e3b]"
                 required
               />
-              {loginMethod === 'mobile' && !otpSent && (
-                <button
-                  type="button"
-                  onClick={handleSendOtp}
-                  className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-3 py-2 rounded-xl"
-                >
-                  Send OTP
-                </button>
-              )}
+            </div>
+
+            <div>
+              <label className="text-slate-700 font-semibold block mb-1">National Identity Card (NIC) / BRN</label>
+              <input
+                type="text"
+                value={nicOrBrn}
+                onChange={(e) => setNicOrBrn(e.target.value)}
+                placeholder="781920394V"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-900 focus:outline-none focus:border-[#064e3b]"
+                required
+              />
             </div>
           </div>
 
-          {loginMethod === 'mobile' && otpSent && (
-            <div className="space-y-1">
-              <label className="text-slate-700 font-semibold block">Enter 6-Digit SMS Verification OTP</label>
-              <input
-                type="text"
-                value={otpOrPass}
-                onChange={(e) => setOtpOrPass(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-mono font-bold tracking-widest text-slate-900 focus:outline-none focus:border-[#064e3b]"
-                required
-              />
-              <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
-                <CheckCircle2 className="w-3 h-3" /> Demo OTP Code autofilled: 892019
-              </span>
+          <button
+            type="submit"
+            className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-extrabold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm mt-2 cursor-pointer"
+          >
+            <span>Log In & Open {selectedRole.toUpperCase()} Interface</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+
+          <div className="pt-2 text-center text-slate-500 text-xs">
+            Don't have an account yet?{' '}
+            <Link href="/register" className="text-[#064e3b] font-bold underline">
+              Sign up as Farmer / Buyer / Logistics
+            </Link>
+          </div>
+        </form>
+      ) : (
+        /* Database Admin Login Form */
+        <form onSubmit={handleAdminLoginSubmit} className="bg-slate-900 text-white border border-slate-800 p-6 rounded-2xl space-y-4 shadow-xl text-xs">
+          <div className="flex items-center gap-3 p-3 bg-amber-400/10 border border-amber-400/30 rounded-xl text-amber-300">
+            <ShieldCheck className="w-5 h-5 shrink-0 text-amber-400" />
+            <div>
+              <span className="font-bold block">Pre-Seeded System Admin Portal</span>
+              <span className="text-[11px] opacity-80">Restricted access for Dambulla Agri Governance & Central Moderators</span>
+            </div>
+          </div>
+
+          {errorMsg && (
+            <div className="bg-rose-500/20 border border-rose-400/40 p-3 rounded-xl text-rose-300 font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
             </div>
           )}
 
-          <div>
-            <label className="text-slate-700 font-semibold block mb-1">National Identity Card (NIC) / Business Reg (BRN)</label>
-            <input
-              type="text"
-              value={nicOrBrn}
-              onChange={(e) => setNicOrBrn(e.target.value)}
-              placeholder="e.g., 781920394V or BRN-2024-98124"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
-              required
-            />
+          <div className="space-y-3 pt-1">
+            <div>
+              <label className="text-slate-300 font-semibold block mb-1">Admin Government NIC / Access ID</label>
+              <input
+                type="text"
+                value={adminNic}
+                onChange={(e) => setAdminNic(e.target.value)}
+                placeholder="GOV-SL-89201"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-slate-300 font-semibold block mb-1">Database Governance Secret Key</label>
+              <input
+                type="password"
+                value={adminPass}
+                onChange={(e) => setAdminPass(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 font-mono font-bold text-white focus:outline-none focus:border-amber-400"
+                required
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-extrabold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm mt-2"
-        >
-          <span>Log In as {selectedRole.toUpperCase()}</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
-
-        <div className="pt-2 text-center text-slate-500 text-[11px]">
-          Don't have a verified account?{' '}
-          <Link href="/register" className="text-[#064e3b] font-bold underline">
-            Register new Farmer / Enterprise account
-          </Link>
-        </div>
-      </form>
+          <button
+            type="submit"
+            className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm mt-3 cursor-pointer"
+          >
+            <KeyRound className="w-4 h-4" />
+            <span>Authenticate Database Admin Console</span>
+          </button>
+        </form>
+      )}
     </div>
   );
 }
