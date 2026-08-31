@@ -49,7 +49,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ shipment, onVeri
               </div>
               <h4 className="text-base font-bold text-white">Delivery Confirmed!</h4>
               <p className="text-slate-400">
-                QR signature verified successfully. Escrow funds have been released to the seller's bank account.
+                QR signature verified successfully. Escrow funds have been released to the seller&apos;s bank account.
               </p>
               <div className="bg-emerald-950/60 p-2.5 rounded-lg border border-emerald-800/60 font-mono text-[11px] text-emerald-300">
                 STATUS: ESCROW_FUNDS_RELEASED
@@ -75,7 +75,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ shipment, onVeri
 
                 <div>
                   <p className="font-semibold text-slate-200">Scan Receiver QR Code</p>
-                  <p className="text-[11px] text-slate-400">Position camera over buyer's invoice QR code</p>
+                  <p className="text-[11px] text-slate-400">Position camera over buyer&apos;s invoice QR code</p>
                 </div>
               </div>
 

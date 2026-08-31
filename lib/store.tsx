@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import {
   UserRole,
   Language,
@@ -322,29 +322,45 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [role, setRole] = useState<UserRole>('buyer');
   const [lang, setLang] = useState<Language>('en');
-  const [listings, setListings] = useState<ProduceListing[]>(initialListings);
-  const [offers, setOffers] = useState<NegotiationOffer[]>(initialOffers);
-  const [contracts, setContracts] = useState<EscrowContract[]>(initialContracts);
-  const [shipments, setShipments] = useState<ShipmentJob[]>(initialShipments);
+  const [listings, setListings] = useState<ProduceListing[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kp_listings');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return initialListings;
+  });
+  const [offers, setOffers] = useState<NegotiationOffer[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kp_offers');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return initialOffers;
+  });
+  const [contracts, setContracts] = useState<EscrowContract[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kp_contracts');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return initialContracts;
+  });
+  const [shipments, setShipments] = useState<ShipmentJob[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kp_shipments');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return initialShipments;
+  });
   const [marketPrices, setMarketPrices] = useState<MarketPriceIndicator[]>(initialMarketPrices);
   const [disputes, setDisputes] = useState<DisputeTicket[]>(initialDisputes);
   const [currentUser] = useState<UserProfile>(initialUser);
-
-  // Persistence in LocalStorage
-  useEffect(() => {
-    try {
-      const savedListings = localStorage.getItem('kp_listings');
-      if (savedListings) setListings(JSON.parse(savedListings));
-      const savedOffers = localStorage.getItem('kp_offers');
-      if (savedOffers) setOffers(JSON.parse(savedOffers));
-      const savedContracts = localStorage.getItem('kp_contracts');
-      if (savedContracts) setContracts(JSON.parse(savedContracts));
-      const savedShipments = localStorage.getItem('kp_shipments');
-      if (savedShipments) setShipments(JSON.parse(savedShipments));
-    } catch {
-      // Fallback to initial state
-    }
-  }, []);
 
   const saveState = (key: string, data: unknown) => {
     try {

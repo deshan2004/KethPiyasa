@@ -128,7 +128,7 @@ function LoginFormContent() {
         </button>
 
         <div className="pt-2 text-center text-slate-500 text-xs">
-          Don't have an account yet?{' '}
+          Don&apos;t have an account yet?{' '}
           <Link href="/register" className="text-[#064e3b] font-bold underline">
             Register new Farmer / Buyer account
           </Link>

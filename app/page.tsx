@@ -85,7 +85,7 @@ export default function HomePage() {
       <section className="space-y-6 pt-4">
         <div className="text-center space-y-1">
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Enterprise Infrastructure for Agriculture</h2>
-          <p className="text-sm text-slate-500">Transforming Sri Lanka's agricultural supply chain with digital transparency</p>
+          <p className="text-sm text-slate-500">Transforming Sri Lanka&apos;s agricultural supply chain with digital transparency</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

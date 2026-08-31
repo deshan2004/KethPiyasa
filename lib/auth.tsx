@@ -75,24 +75,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { setRole } = useApp();
-  const [user, setUser] = useState<UserProfile | null>(defaultProfiles.farmer);
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedAuth = localStorage.getItem('kp_auth_user');
+        if (savedAuth) return JSON.parse(savedAuth);
+      } catch {
+        // ignore
+      }
+    }
+    return defaultProfiles.farmer;
+  });
 
   useEffect(() => {
-    try {
-      const savedAuth = localStorage.getItem('kp_auth_user');
-      if (savedAuth) {
-        const parsed = JSON.parse(savedAuth);
-        setUser(parsed);
-        setRole(parsed.role);
-      } else {
-        // Default initial session to farmer
-        setUser(defaultProfiles.farmer);
-        setRole('farmer');
-      }
-    } catch {
-      setUser(defaultProfiles.farmer);
+    if (user?.role) {
+      setRole(user.role);
     }
-  }, [setRole]);
+  }, [user, setRole]);
 
   const login = (emailOrPhone: string, selectedRole: UserRole) => {
     const profile = defaultProfiles[selectedRole] || {
