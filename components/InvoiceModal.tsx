@@ -48,7 +48,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-black tracking-tight text-white">🌾 KethPiyasa</span>
                 <span className="text-xs bg-emerald-950 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-800">
-                  කෙත්පියස B2B
+                  B2B Official
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">Direct Farmer-to-Buyer B2B Marketplace Platform</p>

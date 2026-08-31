@@ -9,7 +9,7 @@ import { MarketPriceTicker } from '@/components/MarketPriceTicker';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'KethPiyasa (කෙත්පියස) - Direct Farmer-to-Buyer B2B Agricultural Marketplace',
+  title: 'KethPiyasa - Direct Farmer-to-Buyer B2B Agricultural Marketplace',
   description: 'Direct Farmer-to-Buyer B2B Marketplace Platform in Sri Lanka. Connect farmers directly with commercial buyers, bulk crop listings, advance harvest bookings, and escrow payments.',
   icons: {
     icon: [
@@ -39,7 +39,7 @@ export default function RootLayout({
             <footer className="bg-[#043e2f] text-white py-8 px-4 sm:px-8 text-xs border-t border-emerald-900">
               <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <span className="font-bold text-emerald-300 text-sm">kethpiyasa (කෙත්පියස)</span> • National Direct Agricultural B2B Platform
+                  <span className="font-bold text-emerald-300 text-sm">kethpiyasa</span> • National Direct Agricultural B2B Platform
                   <p className="mt-1 text-emerald-200/80">© 2026 KethPiyasa Platform Ltd. Empowering Sri Lankan Agrarian Communities.</p>
                 </div>
                 <div className="flex items-center gap-4 text-emerald-200/80">

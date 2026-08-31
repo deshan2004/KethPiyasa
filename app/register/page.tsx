@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { UserRole } from '@/lib/types';
+import { useApp } from '@/lib/store';
 import { Sprout, ShoppingBag, Truck, ArrowRight, ShieldCheck, CheckCircle2, Lock } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
+  const { lang } = useApp();
 
   const [name, setName] = useState('');
   const [role, setRole] = useState<'farmer' | 'buyer' | 'logistics'>('farmer');
@@ -45,21 +47,21 @@ export default function RegisterPage() {
     {
       key: 'farmer',
       title: 'Farmer Producer',
-      subtitle: 'ගොවි ජනතාව',
+      subtitle: lang === 'si' ? 'ගොවි ජනතාව' : lang === 'ta' ? 'விவசாயி' : 'Agricultural Producer',
       icon: <Sprout className="w-5 h-5" />,
       color: 'border-emerald-600 bg-emerald-50 text-[#064e3b]',
     },
     {
       key: 'buyer',
       title: 'Commercial Buyer',
-      subtitle: 'මිලදී ගන්නා',
+      subtitle: lang === 'si' ? 'මිලදී ගන්නා' : lang === 'ta' ? 'கொள்முதல்' : 'Commercial Buyer',
       icon: <ShoppingBag className="w-5 h-5" />,
       color: 'border-amber-600 bg-amber-50 text-amber-900',
     },
     {
       key: 'logistics',
       title: 'Logistics Partner',
-      subtitle: 'ප්‍රවාහන පාර්ශවය',
+      subtitle: lang === 'si' ? 'ප්‍රවාහන පාර්ශවය' : lang === 'ta' ? 'போக்குவரத்து' : 'Freight & Fleet',
       icon: <Truck className="w-5 h-5" />,
       color: 'border-blue-600 bg-blue-50 text-blue-900',
     },

@@ -141,7 +141,11 @@ export const Navbar: React.FC = () => {
           </div>
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-1.5">
             <span className="text-xl font-extrabold tracking-tight text-slate-900 font-sans leading-none">kethpiyasa</span>
-            <span className="text-[11px] sm:text-xs font-bold text-[#064e3b] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 w-fit">(කෙත්පියස)</span>
+            {t.subBrand && (
+              <span className="text-[11px] sm:text-xs font-bold text-[#064e3b] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 w-fit">
+                ({t.subBrand})
+              </span>
+            )}
           </div>
         </Link>
 

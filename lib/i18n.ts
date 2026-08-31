@@ -4,7 +4,7 @@ export const i18n = {
   en: {
     // Brand & Header
     brandName: 'KethPiyasa',
-    subBrand: 'කෙත්පියස',
+    subBrand: '',
     tagline: 'Direct Farmer-to-Buyer B2B Agricultural Marketplace Platform',
     roleLabel: 'Active View:',
     roleFarmer: 'Farmer Portal',
