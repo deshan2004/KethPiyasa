@@ -7,13 +7,9 @@ import { useAuth } from '@/lib/auth';
 import { UserRole } from '@/lib/types';
 import {
   Sprout,
-  Smartphone,
-  Mail,
   ArrowRight,
   ShieldCheck,
-  AlertCircle,
-  Lock,
-  UserCheck
+  AlertCircle
 } from 'lucide-react';
 
 function LoginFormContent() {
@@ -23,9 +19,8 @@ function LoginFormContent() {
 
   const { login, user } = useAuth();
   
-  const [loginMethod, setLoginMethod] = useState<'email' | 'mobile'>('email');
-  const [emailOrPhone, setEmailOrPhone] = useState('buyer@kethpiyasa.lk');
-  const [passwordOrNic, setPasswordOrNic] = useState('781920394V');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [passwordOrNic, setPasswordOrNic] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [adminDetected, setAdminDetected] = useState(false);
 
@@ -69,7 +64,7 @@ function LoginFormContent() {
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 bg-[#064e3b] text-white text-xs font-bold px-3.5 py-1 rounded-full shadow-xs">
           <Sprout className="w-4 h-4" />
-          <span>KethPiyasa B2B Firebase Authentication</span>
+          <span>KethPiyasa B2B Secure Login</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Account Sign In</h1>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -89,45 +84,23 @@ function LoginFormContent() {
           <div className="bg-amber-50 border border-amber-300 p-3 rounded-xl text-amber-900 font-bold flex items-center gap-2 animate-pulse">
             <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
-              <span className="block text-xs font-extrabold">Firebase Authenticated: Admin Recognized</span>
+              <span className="block text-xs font-extrabold">Secure Authentication: Admin Recognized</span>
               <span className="text-[10px] font-medium text-amber-800">Redirecting to Governance Control Console...</span>
             </div>
           </div>
         )}
 
-        {/* Login Method Toggle */}
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <button
-            type="button"
-            onClick={() => setLoginMethod('email')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold transition-all ${
-              loginMethod === 'email' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            <Mail className="w-3.5 h-3.5" /> Email Address
-          </button>
-          <button
-            type="button"
-            onClick={() => setLoginMethod('mobile')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold transition-all ${
-              loginMethod === 'mobile' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" /> Mobile Phone
-          </button>
-        </div>
-
         {/* Form Inputs */}
         <div className="space-y-3.5 pt-1">
           <div>
             <label className="text-slate-700 font-semibold block mb-1">
-              {loginMethod === 'email' ? 'Registered Email Address' : 'Mobile Phone (+94)'}
+              Email Address or Mobile Phone
             </label>
             <input
-              type={loginMethod === 'email' ? 'email' : 'tel'}
+              type="text"
               value={emailOrPhone}
               onChange={(e) => setEmailOrPhone(e.target.value)}
-              placeholder={loginMethod === 'email' ? 'buyer@kethpiyasa.lk' : '+94 77 123 4567'}
+              placeholder="buyer@kethpiyasa.lk or +94 77 123 4567"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium text-slate-900 focus:outline-none focus:border-[#064e3b] text-xs"
               required
             />
