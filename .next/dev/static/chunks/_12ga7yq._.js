@@ -284,7 +284,7 @@ const Navbar = ()=>{
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                     className: "hidden md:inline text-slate-400 text-[11px]",
-                                    children: "SE3106 Software Construction"
+                                    children: "Sri Lanka Agrarian Network"
                                 }, void 0, false, {
                                     fileName: "[project]/components/Navbar.tsx",
                                     lineNumber: 63,
@@ -2290,15 +2290,15 @@ const initialDisputes = [
 ];
 const initialUser = {
     id: 'usr-001',
-    name: 'Deshan Siriwardhna',
-    role: 'buyer',
-    nicOrBrn: 'OTH/IT/IT_UGC_001/B005-B/0009',
-    phone: '+94 77 000 1122',
-    district: 'Colombo',
+    name: 'Bandara Organic Farms',
+    role: 'farmer',
+    nicOrBrn: '781920394V',
+    phone: '+94 77 123 4567',
+    district: 'Nuwara Eliya',
     bankAccount: {
         bankName: 'Commercial Bank of Ceylon',
         accountNumber: '8001928374',
-        branchName: 'Head Office Branch'
+        branchName: 'Nuwara Eliya Branch'
     },
     verified: true
 };

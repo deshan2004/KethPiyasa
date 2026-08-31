@@ -304,15 +304,15 @@ const initialDisputes: DisputeTicket[] = [
 
 const initialUser: UserProfile = {
   id: 'usr-001',
-  name: 'Deshan Siriwardhna',
-  role: 'buyer',
-  nicOrBrn: 'OTH/IT/IT_UGC_001/B005-B/0009',
-  phone: '+94 77 000 1122',
-  district: 'Colombo',
+  name: 'Bandara Organic Farms',
+  role: 'farmer',
+  nicOrBrn: '781920394V',
+  phone: '+94 77 123 4567',
+  district: 'Nuwara Eliya',
   bankAccount: {
     bankName: 'Commercial Bank of Ceylon',
     accountNumber: '8001928374',
-    branchName: 'Head Office Branch',
+    branchName: 'Nuwara Eliya Branch',
   },
   verified: true,
 };

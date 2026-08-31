@@ -101,16 +101,16 @@ function RootLayout({ children }) {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "font-bold text-emerald-300 text-sm",
-                                                children: "kethpiyasa (KethPiyasa)"
+                                                children: "kethpiyasa (කෙත්පියස)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/layout.tsx",
                                                 lineNumber: 42,
                                                 columnNumber: 19
                                             }, this),
-                                            " • SE3106 Software Construction & Evolution",
+                                            " • National Direct Agricultural B2B Grid",
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "mt-1 text-emerald-200/80",
-                                                children: "Deshan Siriwardhna | Nurani Kaushalya | Vishmi Kavindya"
+                                                children: "© 2026 KethPiyasa Platform Ltd. Empowering Sri Lankan Agrarian Communities."
                                             }, void 0, false, {
                                                 fileName: "[project]/app/layout.tsx",
                                                 lineNumber: 43,
@@ -134,7 +134,7 @@ function RootLayout({ children }) {
                                             }, this),
                                             " • ",
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                children: "Verified by NIC / License"
+                                                children: "Verified by NIC / Business License"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/layout.tsx",
                                                 lineNumber: 46,
@@ -142,11 +142,11 @@ function RootLayout({ children }) {
                                             }, this),
                                             " • ",
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                children: "Sri Lanka Agricultural Grid"
+                                                children: "Central Bank Settlement Network"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/layout.tsx",
                                                 lineNumber: 46,
-                                                columnNumber: 90
+                                                columnNumber: 99
                                             }, this)
                                         ]
                                     }, void 0, true, {

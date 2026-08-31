@@ -60,7 +60,7 @@ export const Navbar: React.FC = () => {
               <CheckCircle2 className="w-3.5 h-3.5" /> Direct Farmer-to-Buyer B2B Platform
             </span>
             <span className="hidden md:inline text-slate-700">|</span>
-            <span className="hidden md:inline text-slate-400 text-[11px]">SE3106 Software Construction</span>
+            <span className="hidden md:inline text-slate-400 text-[11px]">Sri Lanka Agrarian Network</span>
           </div>
 
           <div className="flex items-center gap-3 shrink-0 ml-auto">
