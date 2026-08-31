@@ -11,6 +11,14 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'KethPiyasa (කෙත්පියස) - Direct Farmer-to-Buyer B2B Agricultural Marketplace',
   description: 'Direct Farmer-to-Buyer B2B Marketplace Platform in Sri Lanka. Connect farmers directly with commercial buyers, bulk crop listings, advance harvest bookings, and escrow payments.',
+  icons: {
+    icon: [
+      { url: '/logo.png', type: 'image/png' },
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({

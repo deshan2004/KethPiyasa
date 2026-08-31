@@ -99,13 +99,15 @@ export const Navbar: React.FC = () => {
       {/* Main Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-[#064e3b] flex items-center justify-center text-white shadow-sm">
-            <Sprout className="w-5 h-5" />
-          </div>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <img 
+            src="/logo.png" 
+            alt="KethPiyasa Logo" 
+            className="w-9 h-9 rounded-full object-cover shadow-sm border border-emerald-200 group-hover:scale-105 transition-transform" 
+          />
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-bold tracking-tight text-slate-900 font-sans">kethpiyasa</span>
-            <span className="text-sm font-bold text-[#064e3b]">(KethPiyasa)</span>
+            <span className="text-sm font-bold text-[#064e3b]">(කෙත්පියස)</span>
           </div>
         </Link>
 
