@@ -39,11 +39,11 @@ export default function RootLayout({
             <footer className="bg-[#043e2f] text-white py-8 px-4 sm:px-8 text-xs border-t border-emerald-900">
               <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <span className="font-bold text-emerald-300 text-sm">kethpiyasa (කෙත්පියස)</span> • National Direct Agricultural B2B Grid
+                  <span className="font-bold text-emerald-300 text-sm">kethpiyasa (කෙත්පියස)</span> • National Direct Agricultural B2B Platform
                   <p className="mt-1 text-emerald-200/80">© 2026 KethPiyasa Platform Ltd. Empowering Sri Lankan Agrarian Communities.</p>
                 </div>
                 <div className="flex items-center gap-4 text-emerald-200/80">
-                  <span>Escrow Secured</span> • <span>Verified by NIC / Business License</span> • <span>Central Bank Settlement Network</span>
+                  <span>Escrow Secured</span> • <span>Verified by NIC / Business License</span> • <span>Sri Lanka Agricultural Grid</span>
                 </div>
               </div>
             </footer>
