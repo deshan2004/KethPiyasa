@@ -100,14 +100,16 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <img 
-            src="/logo.png" 
-            alt="KethPiyasa Logo" 
-            className="w-9 h-9 rounded-full object-cover shadow-sm border border-emerald-200 group-hover:scale-105 transition-transform" 
-          />
-          <div className="flex items-baseline gap-1">
-            <span className="text-xl font-bold tracking-tight text-slate-900 font-sans">kethpiyasa</span>
-            <span className="text-sm font-bold text-[#064e3b]">(කෙත්පියස)</span>
+          <div className="relative p-0.5 rounded-full bg-gradient-to-tr from-amber-400 via-emerald-600 to-amber-300 shadow-md group-hover:scale-105 transition-transform duration-300">
+            <img 
+              src="/logo.png" 
+              alt="KethPiyasa Logo" 
+              className="w-9 h-9 rounded-full object-cover bg-[#042e23]" 
+            />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-extrabold tracking-tight text-slate-900 font-sans">kethpiyasa</span>
+            <span className="text-xs font-bold text-[#064e3b] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">(කෙත්පියස)</span>
           </div>
         </Link>
 

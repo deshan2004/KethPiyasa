@@ -7,7 +7,7 @@ module.exports = mod;
 }),
 "[project]/app/icon.png (static in ecmascript, tag client)", ((__turbopack_context__) => {
 
-__turbopack_context__.v("/_next/static/media/icon.22pdui4ya_3bl.png" + (globalThis["NEXT_CLIENT_ASSET_SUFFIX"] || ''));}),
+__turbopack_context__.v("/_next/static/media/icon.2syoml-f6-x5h.png" + (globalThis["NEXT_CLIENT_ASSET_SUFFIX"] || ''));}),
 "[project]/app/icon.png.mjs { IMAGE => \"[project]/app/icon.png (static in ecmascript, tag client)\" } [app-rsc] (structured image object, ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
@@ -19,8 +19,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$icon$2e$png__$28$stat
 ;
 const __TURBOPACK__default__export__ = {
     src: __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$icon$2e$png__$28$static__in__ecmascript$2c$__tag__client$29$__["default"],
-    width: 1024,
-    height: 1024
+    width: 744,
+    height: 744
 };
 }),
 "[project]/app/page.tsx [app-rsc] (client reference proxy)", ((__turbopack_context__) => {
