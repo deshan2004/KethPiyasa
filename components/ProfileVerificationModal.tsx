@@ -66,18 +66,18 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl space-y-0 text-xs">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#064e3b] to-[#042e23] text-white p-5 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl text-xs my-auto">
+        {/* Header - Fixed Top */}
+        <div className="bg-gradient-to-r from-[#064e3b] to-[#042e23] text-white p-4 sm:p-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-300 font-extrabold border border-white/10 text-base">
+            <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-300 font-extrabold border border-white/10 text-base shrink-0">
               {user.name.charAt(0)}
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-white flex items-center gap-1.5">
+              <h3 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-1.5">
                 <span>{user.name}</span>
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               </h3>
               <p className="text-[11px] text-emerald-200 font-medium">
                 Identity & Bank Verification Profile • <span className="uppercase font-bold">{user.role}</span>
@@ -86,14 +86,14 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
           </div>
           <button 
             onClick={onClose}
-            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+        {/* Content Body - Scrollable */}
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 flex-1 overflow-y-auto">
           {successMsg && (
             <div className="bg-emerald-50 border border-emerald-300 p-3 rounded-2xl text-emerald-900 font-semibold flex items-center gap-2 animate-in fade-in">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -261,8 +261,8 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
           </form>
         </div>
 
-        {/* Footer */}
-        <div className="bg-slate-50 border-t border-slate-200 p-4 text-center">
+        {/* Footer - Fixed Bottom */}
+        <div className="bg-slate-50 border-t border-slate-200 p-3 sm:p-4 text-center shrink-0">
           <button
             onClick={onClose}
             className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-2 rounded-xl text-xs transition-colors cursor-pointer"
