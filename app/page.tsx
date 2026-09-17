@@ -89,16 +89,16 @@ export default function HomePage() {
 
         {/* Hero Bottom National Ticker Bar matching mockup */}
         <div className="bg-[#064e3b] text-white py-2.5 px-6 flex items-center justify-between text-xs font-semibold overflow-x-auto">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <span className="uppercase text-[11px] font-bold text-emerald-200">NATIONAL MARKET PRICES</span>
             <span className="text-emerald-300">|</span>
-            <span className="text-white">Dambulla Central Market Prices</span>
+            <span className="text-emerald-100 font-medium text-[11px]">Sri Lanka Economic Centers Grid</span>
           </div>
 
-          <div className="flex items-center gap-6">
-            {marketPrices.slice(0, 3).map((mp) => (
+          <div className="flex items-center gap-6 overflow-x-auto scrollbar-none ml-4">
+            {marketPrices.map((mp) => (
               <span key={mp.id} className="whitespace-nowrap">
-                {mp.cropName}: <strong className="text-amber-300">LKR {mp.avgPriceLkr}/Kg</strong> ({mp.change24h > 0 ? `+${mp.change24h}%` : `${mp.change24h}%`})
+                {mp.cropName} <span className="text-emerald-200/80 text-[10px]">({mp.centerName})</span>: <strong className="text-amber-300">LKR {mp.avgPriceLkr}/Kg</strong> ({mp.change24h > 0 ? `+${mp.change24h}%` : `${mp.change24h}%`})
               </span>
             ))}
           </div>
