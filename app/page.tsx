@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/lib/store';
+import { useAuth } from '@/lib/auth';
 import { getTranslation } from '@/lib/i18n';
 import { SriLankaMap } from '@/components/SriLankaMap';
 import { ProduceListing } from '@/lib/types';
@@ -14,10 +15,13 @@ import {
   MapPin, 
   ArrowRight, 
   TrendingUp,
-  Building2
+  Building2,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 
 export default function HomePage() {
+  const { user } = useAuth();
   const { listings, setRole, lang, marketPrices } = useApp();
   const t = getTranslation(lang);
   const [selectedListing, setSelectedListing] = useState<ProduceListing | null>(null);
@@ -33,7 +37,7 @@ export default function HomePage() {
     <div className="space-y-12 pb-12 bg-slate-50">
       {/* Hero Section matching 3rd mockup */}
       <section className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm text-center">
-        <div className="p-8 sm:p-14 md:p-20 max-w-4xl mx-auto space-y-6">
+        <div className="p-8 sm:p-14 md:p-16 max-w-4xl mx-auto space-y-6">
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
             Direct Farmer-to-Buyer B2B Marketplace
           </h1>
@@ -42,25 +46,53 @@ export default function HomePage() {
             Eliminate multi-tier broker involvement, book advance harvests, trade with escrow security, and lower Sri Lanka post-harvest losses across the agricultural sector.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <Link
-              href="/buyer"
-              onClick={() => setRole('buyer')}
-              className="flex items-center gap-2 bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-sm px-6 py-3 rounded-xl shadow transition-all"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>Enter Marketplace</span>
-            </Link>
+          {user ? (
+            <div className="bg-emerald-50/80 border border-emerald-200 p-6 rounded-2xl space-y-3 max-w-xl mx-auto text-left shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#064e3b] bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  Logged in as {user.role}
+                </span>
+                <span className="text-xs font-semibold text-slate-500">{user.district} District</span>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Welcome back, {user.name}!</h3>
+              <p className="text-xs text-slate-600">Access your dedicated {user.role} workspace or explore active wholesale stock below.</p>
+              <div className="pt-1">
+                <Link
+                  href={`/${user.role}`}
+                  className="inline-flex items-center gap-2 bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-xs transition-all"
+                >
+                  <span>Open My {user.role.toUpperCase()} Workspace</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <Link
+                href="/login?role=buyer"
+                className="flex items-center gap-2 bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl shadow transition-all"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Login as Buyer</span>
+              </Link>
 
-            <Link
-              href="/farmer"
-              onClick={() => setRole('farmer')}
-              className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm px-6 py-3 rounded-xl border border-slate-300 shadow-2xs transition-all"
-            >
-              <Sprout className="w-4 h-4 text-[#064e3b]" />
-              <span>Post Harvest List</span>
-            </Link>
-          </div>
+              <Link
+                href="/login?role=farmer"
+                className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm px-5 py-3 rounded-xl border border-slate-300 shadow-2xs transition-all"
+              >
+                <Sprout className="w-4 h-4 text-[#064e3b]" />
+                <span>Login as Farmer</span>
+              </Link>
+
+              <Link
+                href="/register"
+                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl shadow transition-all"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Register Account</span>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Hero Bottom National Ticker Bar matching mockup */}

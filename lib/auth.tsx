@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // ignore
       }
     }
-    return defaultProfiles.farmer;
+    return null;
   });
 
   useEffect(() => {
