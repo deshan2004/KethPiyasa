@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { UserRole } from '@/lib/types';
 import { useApp } from '@/lib/store';
-import { Sprout, ShoppingBag, Truck, ArrowRight, ShieldCheck, CheckCircle2, Lock } from 'lucide-react';
+import { Sprout, ShoppingBag, Truck, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -106,10 +106,7 @@ export default function RegisterPage() {
             })}
           </div>
           
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 mt-2">
-            <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span>Note: System Admin accounts are pre-seeded in the database and managed via central governance.</span>
-          </div>
+
         </div>
 
         {/* User Details */}

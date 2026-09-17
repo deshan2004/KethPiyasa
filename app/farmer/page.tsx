@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useApp } from '@/lib/store';
 import { getTranslation } from '@/lib/i18n';
 import { ProduceListing, QualityGrade } from '@/lib/types';
+import { InvoiceModal } from '@/components/InvoiceModal';
 import {
   Sprout,
   PlusCircle,
@@ -22,15 +23,17 @@ import {
   LayoutDashboard,
   Boxes,
   CreditCard,
-  Settings
+  Building2,
+  ArrowRight
 } from 'lucide-react';
 
 export default function FarmerPage() {
   const { listings, addListing, offers, respondToOffer, contracts, lang } = useApp();
   const t = getTranslation(lang);
 
-  const [activeTab, setActiveTab] = useState<'listings' | 'inbox' | 'payouts'>('listings');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'inbox' | 'listings' | 'payouts'>('dashboard');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [invoiceModalContract, setInvoiceModalContract] = useState<any | null>(null);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -72,11 +75,12 @@ export default function FarmerPage() {
     setShowCreateModal(false);
     setTitle('');
     setDescription('');
+    setActiveTab('listings');
   };
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 pb-12">
-      {/* Left Navigation Sidebar matching 4th mockup */}
+      {/* Left Navigation Sidebar */}
       <aside className="w-full lg:w-64 bg-white border border-slate-200 rounded-2xl p-4 space-y-6 shadow-2xs shrink-0">
         <div className="flex items-center gap-2 px-2 border-b border-slate-100 pb-3">
           <div className="w-8 h-8 rounded-lg bg-[#064e3b] text-white flex items-center justify-center font-bold text-xs">
@@ -90,9 +94,9 @@ export default function FarmerPage() {
 
         <nav className="space-y-1 text-xs font-semibold">
           <button
-            onClick={() => setActiveTab('listings')}
+            onClick={() => setActiveTab('dashboard')}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors ${
-              activeTab === 'listings' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
+              activeTab === 'dashboard' ? 'bg-[#064e3b] text-white font-bold' : 'text-slate-600 hover:bg-slate-50'
             }`}
           >
             <LayoutDashboard className="w-4 h-4" /> Dashboard
@@ -100,24 +104,26 @@ export default function FarmerPage() {
           <button
             onClick={() => setActiveTab('inbox')}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors ${
-              activeTab === 'inbox' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
+              activeTab === 'inbox' ? 'bg-[#064e3b] text-white font-bold' : 'text-slate-600 hover:bg-slate-50'
             }`}
           >
             <MessageSquare className="w-4 h-4" /> Active Bids ({offers.length})
           </button>
           <button
             onClick={() => setActiveTab('listings')}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-slate-600 hover:bg-slate-50"
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors ${
+              activeTab === 'listings' ? 'bg-[#064e3b] text-white font-bold' : 'text-slate-600 hover:bg-slate-50'
+            }`}
           >
-            <Boxes className="w-4 h-4" /> Inventory
+            <Boxes className="w-4 h-4" /> Inventory ({listings.length})
           </button>
           <button
             onClick={() => setActiveTab('payouts')}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors ${
-              activeTab === 'payouts' ? 'bg-[#064e3b] text-white' : 'text-slate-600 hover:bg-slate-50'
+              activeTab === 'payouts' ? 'bg-[#064e3b] text-white font-bold' : 'text-slate-600 hover:bg-slate-50'
             }`}
           >
-            <CreditCard className="w-4 h-4" /> Payments
+            <CreditCard className="w-4 h-4" /> Payments ({contracts.length})
           </button>
         </nav>
 
@@ -133,47 +139,124 @@ export default function FarmerPage() {
 
       {/* Main Content Area */}
       <main className="flex-1 space-y-6">
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 flex items-center justify-between shadow-2xs">
+        {/* Dynamic Section Header */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
           <div>
-            <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Dashboard</h1>
-            <p className="text-xs text-slate-500">Farmer Produce & Sales Overview</p>
+            <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+              {activeTab === 'dashboard' && 'Farmer Dashboard'}
+              {activeTab === 'inbox' && 'Active Bids & Buyer Quotes'}
+              {activeTab === 'listings' && 'Produce Stock & Inventory'}
+              {activeTab === 'payouts' && 'Payments & Escrow Settlements'}
+            </h1>
+            <p className="text-xs text-slate-500">
+              {activeTab === 'dashboard' && 'Produce Overview & Direct B2B Agricultural Sales'}
+              {activeTab === 'inbox' && 'Review and accept direct price offers from commercial buyers'}
+              {activeTab === 'listings' && 'Manage your active produce listings and harvest stocks'}
+              {activeTab === 'payouts' && 'Track direct bank settlements and escrow deposit releases'}
+            </p>
           </div>
 
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs px-4 py-2 rounded-xl shadow-2xs flex items-center gap-1.5"
-          >
-            <PlusCircle className="w-3.5 h-3.5" /> Add Listing
-          </button>
-        </div>
-
-        {/* KPI Cards matching 4th mockup */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
-            <span className="text-xs text-slate-500 font-medium block">Total Finalized Sales</span>
-            <div className="text-2xl font-black text-[#064e3b]">Rs. 1,450,000</div>
-            <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> +18% vs last month
-            </span>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
-            <span className="text-xs text-slate-500 font-medium block">Active Bids</span>
-            <div className="text-2xl font-black text-amber-600">14</div>
-            <span className="text-[11px] text-amber-600 font-semibold">3 pending counter-offers</span>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
-            <span className="text-xs text-slate-500 font-medium block">Upcoming Harvest</span>
-            <div className="text-2xl font-black text-slate-900">4,500 kg</div>
-            <span className="text-[11px] text-slate-500">Pre-harvest forward contracts</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs px-4 py-2 rounded-xl shadow-2xs flex items-center gap-1.5"
+            >
+              <PlusCircle className="w-3.5 h-3.5" /> Add Listing
+            </button>
           </div>
         </div>
 
-        {/* Current Produce Inventory Table */}
+        {/* Dashboard Overview view */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
+                <span className="text-xs text-slate-500 font-medium block">Total Finalized Sales</span>
+                <div className="text-2xl font-black text-[#064e3b]">Rs. 1,450,000</div>
+                <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" /> +18% vs last month
+                </span>
+              </div>
+
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
+                <span className="text-xs text-slate-500 font-medium block">Active Bids</span>
+                <div className="text-2xl font-black text-amber-600">{offers.length}</div>
+                <span className="text-[11px] text-amber-600 font-semibold">Pending buyer offers</span>
+              </div>
+
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
+                <span className="text-xs text-slate-500 font-medium block">Upcoming Harvest</span>
+                <div className="text-2xl font-black text-slate-900">4,500 kg</div>
+                <span className="text-[11px] text-slate-500">Pre-harvest forward contracts</span>
+              </div>
+            </div>
+
+            {/* Produce Inventory Listings Overview */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 text-sm">Active Inventory Overview</h3>
+                <button
+                  onClick={() => setActiveTab('listings')}
+                  className="text-xs text-[#064e3b] font-bold hover:underline"
+                >
+                  View All Listings →
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 uppercase font-semibold">
+                      <th className="p-3">Produce Item</th>
+                      <th className="p-3">Grade</th>
+                      <th className="p-3">Volume</th>
+                      <th className="p-3">Baseline Price</th>
+                      <th className="p-3">Location</th>
+                      <th className="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {listings.map((item) => (
+                      <tr key={item.id}>
+                        <td className="p-3 font-bold text-slate-900 flex items-center gap-2">
+                          <img src={item.photos[0]} alt={item.title} className="w-8 h-8 rounded-lg object-cover" />
+                          <span>{item.title}</span>
+                        </td>
+                        <td className="p-3">
+                          <span className="bg-emerald-100 text-[#064e3b] font-bold px-2 py-0.5 rounded text-[10px]">
+                            {item.grade}
+                          </span>
+                        </td>
+                        <td className="p-3 font-semibold text-slate-700">{item.quantityKg.toLocaleString()} Kg</td>
+                        <td className="p-3 font-black text-[#064e3b]">LKR {item.pricePerKg}/kg</td>
+                        <td className="p-3 text-slate-600">{item.locationDistrict}</td>
+                        <td className="p-3">
+                          <span className="bg-slate-100 text-slate-800 font-semibold px-2.5 py-0.5 rounded-full text-[10px]">
+                            {item.status.toUpperCase()}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Inventory View */}
         {activeTab === 'listings' && (
           <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-2xs">
-            <h3 className="font-bold text-slate-900 text-sm">Produce Inventory Listings</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 text-sm">Produce Stock Inventory</h3>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-[#064e3b] text-white font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-2xs"
+              >
+                <PlusCircle className="w-3.5 h-3.5" /> New Stock
+              </button>
+            </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
@@ -183,7 +266,8 @@ export default function FarmerPage() {
                     <th className="p-3">Grade</th>
                     <th className="p-3">Volume</th>
                     <th className="p-3">Baseline Price</th>
-                    <th className="p-3">Location</th>
+                    <th className="p-3">Location Hub</th>
+                    <th className="p-3">Harvest Date</th>
                     <th className="p-3">Status</th>
                   </tr>
                 </thead>
@@ -201,9 +285,10 @@ export default function FarmerPage() {
                       </td>
                       <td className="p-3 font-semibold text-slate-700">{item.quantityKg.toLocaleString()} Kg</td>
                       <td className="p-3 font-black text-[#064e3b]">LKR {item.pricePerKg}/kg</td>
-                      <td className="p-3 text-slate-600">{item.locationDistrict}</td>
+                      <td className="p-3 text-slate-600">{item.locationHub}</td>
+                      <td className="p-3 text-slate-600">{item.harvestDate}</td>
                       <td className="p-3">
-                        <span className="bg-slate-100 text-slate-800 font-semibold px-2.5 py-0.5 rounded-full text-[10px]">
+                        <span className="bg-emerald-50 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] border border-emerald-200">
                           {item.status.toUpperCase()}
                         </span>
                       </td>
@@ -215,10 +300,10 @@ export default function FarmerPage() {
           </div>
         )}
 
-        {/* Offers Inbox */}
+        {/* Offers Inbox View */}
         {activeTab === 'inbox' && (
           <div className="space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm">Negotiation Offers Inbox</h3>
+            <h3 className="font-bold text-slate-900 text-sm">Buyer Quote & Negotiation Offers</h3>
 
             <div className="space-y-3">
               {offers.map((off) => (
@@ -250,7 +335,7 @@ export default function FarmerPage() {
                     <div className="flex gap-2 pt-1">
                       <button
                         onClick={() => respondToOffer(off.id, 'accept')}
-                        className="bg-[#064e3b] text-white font-bold px-3 py-1.5 rounded-lg text-xs"
+                        className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-3 py-1.5 rounded-lg text-xs"
                       >
                         Accept Offer
                       </button>
@@ -261,12 +346,65 @@ export default function FarmerPage() {
             </div>
           </div>
         )}
+
+        {/* Payments & Escrow Payouts View */}
+        {activeTab === 'payouts' && (
+          <div className="space-y-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs text-slate-500 uppercase font-bold tracking-wider block">SETTLEMENT BANK ACCOUNT</span>
+                  <h4 className="font-extrabold text-slate-900 text-base flex items-center gap-1.5">
+                    <span>Commercial Bank of Ceylon • Branch: Dambulla</span>
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  </h4>
+                  <p className="text-xs text-slate-600 font-mono mt-0.5">Account: **** **** 4892 (Bandara Organic Farms)</p>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-xs text-slate-400 block">Total Settled Escrow Payouts</span>
+                  <span className="text-2xl font-black text-[#064e3b]">LKR 1,450,000</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-2xs">
+              <h3 className="font-bold text-slate-900 text-sm">Escrow Settlement & Invoice History</h3>
+
+              <div className="space-y-3 text-xs">
+                {contracts.map((ctr) => (
+                  <div key={ctr.id} className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <span className="font-mono text-[#064e3b] font-bold block">{ctr.invoiceNumber}</span>
+                      <h4 className="font-bold text-slate-900 text-sm">{ctr.produceTitle}</h4>
+                      <p className="text-slate-500">Buyer: {ctr.buyerName} ({ctr.buyerCompany})</p>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-base font-extrabold text-[#064e3b] block">LKR {ctr.produceAmountLkr.toLocaleString()}</span>
+                      <span className="bg-emerald-100 text-[#064e3b] font-bold px-2 py-0.5 rounded text-[10px]">
+                        ESCROW GUARANTEED
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => setInvoiceModalContract(ctr)}
+                      className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-2xs cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> View Invoice
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Listing Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200 my-auto">
             <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-sm">Add New Produce Listing</h3>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-700">
@@ -340,7 +478,7 @@ export default function FarmerPage() {
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#064e3b] text-white font-bold px-4 py-2 rounded-xl shadow-2xs"
+                  className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-4 py-2 rounded-xl shadow-2xs"
                 >
                   Publish Listing
                 </button>
@@ -348,6 +486,11 @@ export default function FarmerPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Digital Invoice Modal */}
+      {invoiceModalContract && (
+        <InvoiceModal contract={invoiceModalContract} onClose={() => setInvoiceModalContract(null)} />
       )}
     </div>
   );
