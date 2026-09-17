@@ -66,7 +66,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
       <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl text-xs my-auto">
         {/* Header - Fixed Top */}
         <div className="bg-gradient-to-r from-[#064e3b] to-[#042e23] text-white p-4 sm:p-5 flex items-center justify-between shrink-0">

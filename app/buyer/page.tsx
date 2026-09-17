@@ -357,7 +357,7 @@ export default function BuyerPage() {
 
       {/* Quote Modal */}
       {biddingModalListing && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
             <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-sm">B2B Price Quote Offer</h3>

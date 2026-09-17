@@ -53,7 +53,8 @@ export const Navbar: React.FC = () => {
   const userPortal = getPortalLinkForRole();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-xs transition-all duration-300">
+    <>
+      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-xs transition-all duration-300">
       {/* Top Utility Bar */}
       <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-slate-200 py-1.5 px-4 sm:px-8 text-xs border-b border-emerald-900/30">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 overflow-x-auto scrollbar-none">
@@ -385,12 +386,13 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Identity & Bank Verification Modal */}
-      <ProfileVerificationModal
-        isOpen={profileModalOpen}
-        onClose={() => setProfileModalOpen(false)}
-      />
     </header>
+
+    {/* Identity & Bank Verification Modal */}
+    <ProfileVerificationModal
+      isOpen={profileModalOpen}
+      onClose={() => setProfileModalOpen(false)}
+    />
+    </>
   );
 };
