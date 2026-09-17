@@ -68,29 +68,21 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Link
-                href="/login?role=buyer"
-                className="flex items-center gap-2 bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl shadow transition-all"
+              <a
+                href="#active-listings"
+                className="flex items-center gap-2 bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-xl shadow transition-all active:scale-95"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Login as Buyer</span>
-              </Link>
+                <span>Explore Wholesale Produce</span>
+              </a>
 
-              <Link
-                href="/login?role=farmer"
-                className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm px-5 py-3 rounded-xl border border-slate-300 shadow-2xs transition-all"
+              <a
+                href="#agri-map"
+                className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm px-6 py-3 rounded-xl border border-slate-300 shadow-2xs transition-all active:scale-95"
               >
-                <Sprout className="w-4 h-4 text-[#064e3b]" />
-                <span>Login as Farmer</span>
-              </Link>
-
-              <Link
-                href="/register"
-                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl shadow transition-all"
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>Register Account</span>
-              </Link>
+                <MapPin className="w-4 h-4 text-[#064e3b]" />
+                <span>View Sri Lanka Agri Grid</span>
+              </a>
             </div>
           )}
         </div>
@@ -154,12 +146,12 @@ export default function HomePage() {
       </section>
 
       {/* Sri Lanka Distribution Map */}
-      <section className="space-y-4">
+      <section id="agri-map" className="space-y-4">
         <SriLankaMap listings={listings} onSelectListing={(l) => setSelectedListing(l)} />
       </section>
 
       {/* Active Wholesale Listings */}
-      <section className="space-y-6">
+      <section id="active-listings" className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Active Wholesale Produce Listings</h2>
