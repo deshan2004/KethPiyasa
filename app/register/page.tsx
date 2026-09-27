@@ -186,6 +186,19 @@ export default function RegisterPage() {
         setErrorMsg(
           'Network error. Please check your internet connection.'
         );
+      } else if (
+        error?.code ===
+          'permission-denied' ||
+        error?.message?.includes(
+          'permission'
+        ) ||
+        error?.message?.includes(
+          'insufficient permissions'
+        )
+      ) {
+        setErrorMsg(
+          'Firestore permission is blocked. Please allow writes to /users/{uid} in Firebase Security Rules.'
+        );
       } else {
         setErrorMsg(
           error?.message ||
