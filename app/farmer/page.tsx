@@ -28,7 +28,11 @@ import {
   Building2,
   ArrowRight,
   LogIn,
-  UserPlus
+  UserPlus,
+  Upload,
+  Image as ImageIcon,
+  Camera,
+  Link as LinkIcon
 } from 'lucide-react';
 
 export default function FarmerPage() {
@@ -84,27 +88,49 @@ export default function FarmerPage() {
   const [moistureContent, setMoistureContent] = useState('12% Fresh');
   const [minOrderQtyKg, setMinOrderQtyKg] = useState<number>(500);
   const [description, setDescription] = useState('');
+  
+  // Image / Photo state
+  const [photoUrl, setPhotoUrl] = useState<string>(
+    'https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=600&auto=format&fit=crop&q=80'
+  );
+  const [photoInputMode, setPhotoInputMode] = useState<'preset' | 'file' | 'url'>('preset');
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setPhotoUrl(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const finalCrop = cropType.trim() || 'Produce Listing';
+    const finalPhoto = photoUrl || 'https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=600&auto=format&fit=crop&q=80';
+
     addListing({
-      title: title || `${grade} ${cropType} (${locationDistrict})`,
-      cropType,
+      title: title || `${grade} ${finalCrop} (${locationDistrict})`,
+      cropType: finalCrop,
       grade,
       quantityKg,
       pricePerKg,
       harvestDate,
       locationDistrict,
       locationHub,
-      farmerName: 'Bandara Organic Farms',
-      farmerNic: '781920394V',
-      farmerPhone: '+94 77 123 4567',
+      farmerName: user?.name || 'Bandara Organic Farms',
+      farmerNic: user?.farmerNic || '781920394V',
+      farmerPhone: user?.phone || '+94 77 123 4567',
       isPreHarvest,
-      photos: ['https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=600&auto=format&fit=crop&q=80'],
+      photos: [finalPhoto],
       organicCertified,
       moistureContent,
       minOrderQtyKg,
-      description: description || `Freshly harvested ${cropType} from ${locationDistrict}. Grade: ${grade}.`,
+      description: description || `Freshly harvested ${finalCrop} from ${locationDistrict}. Grade: ${grade}.`,
     });
 
     setShowCreateModal(false);
@@ -439,54 +465,96 @@ export default function FarmerPage() {
       {/* Listing Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200 my-auto">
-            <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">Add New Produce Listing</h3>
+          <div className="bg-white border border-slate-200 w-full max-w-xl rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200 my-auto">
+            <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm">Add New Produce Listing / අස්වැන්න එක් කරන්න</h3>
+                <p className="text-[11px] text-slate-500">List custom crop stock or pre-harvest forward contracts for commercial buyers</p>
+              </div>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="p-5 space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-slate-700 font-semibold block mb-1">Crop Variety</label>
-                  <select
-                    value={cropType}
-                    onChange={(e) => setCropType(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium"
-                  >
-                    <option value="Leeks">Leeks</option>
-                    <option value="Carrots">Carrots</option>
-                    <option value="Paddy">Paddy / Samba Rice</option>
-                    <option value="Tomatoes">Tomatoes</option>
-                    <option value="Green Chili">Green Chili</option>
-                    <option value="Red Onion">Red Onion</option>
-                  </select>
+            <form onSubmit={handleCreateSubmit} className="p-5 space-y-4 text-xs max-h-[80vh] overflow-y-auto">
+              {/* Crop Variety & Custom Name */}
+              <div>
+                <label className="text-slate-700 font-semibold block mb-1">
+                  Crop Variety / Inventory Item (අස්වැන්න / ඉන්වෙන්ටරි නම) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={cropType}
+                  onChange={(e) => setCropType(e.target.value)}
+                  placeholder="e.g. Leeks, Gotukola, Pumpkin, Sweet Corn, Passionfruit..."
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-[#064e3b] focus:bg-white focus:outline-none rounded-xl px-3 py-2 font-semibold text-slate-800 transition-all"
+                  required
+                />
+                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span className="text-[10px] text-slate-400 font-medium">Quick Select:</span>
+                  {['Leeks', 'Carrots', 'Paddy', 'Tomatoes', 'Green Chili', 'Red Onion', 'Potato', 'Pumpkin', 'Gotukola', 'Cabbage', 'Beans'].map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setCropType(item)}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold transition-all ${
+                        cropType === item
+                          ? 'bg-[#064e3b] text-white shadow-2xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
+              {/* Quality Grade & Location District */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-700 font-semibold block mb-1">Quality Grade</label>
                   <select
                     value={grade}
                     onChange={(e) => setGrade(e.target.value as QualityGrade)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
                   >
-                    <option value="Grade A">Grade A</option>
-                    <option value="Grade B">Grade B</option>
-                    <option value="Grade C">Grade C</option>
+                    <option value="Grade A">Grade A (Premium Export / Supermarket)</option>
+                    <option value="Grade B">Grade B (Standard Commercial Grade)</option>
+                    <option value="Grade C">Grade C (Processing & Canning Grade)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">Farm District Location</label>
+                  <select
+                    value={locationDistrict}
+                    onChange={(e) => setLocationDistrict(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                  >
+                    <option value="Nuwara Eliya">Nuwara Eliya</option>
+                    <option value="Dambulla">Dambulla</option>
+                    <option value="Badulla">Badulla</option>
+                    <option value="Jaffna">Jaffna</option>
+                    <option value="Polonnaruwa">Polonnaruwa</option>
+                    <option value="Matale">Matale</option>
+                    <option value="Hambantota">Hambantota</option>
+                    <option value="Gampaha">Gampaha</option>
+                    <option value="Kandy">Kandy</option>
+                    <option value="Puttalam">Puttalam</option>
                   </select>
                 </div>
               </div>
 
+              {/* Quantity & Price */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-700 font-semibold block mb-1">Quantity (Kg)</label>
                   <input
                     type="number"
+                    min="1"
                     value={quantityKg}
                     onChange={(e) => setQuantityKg(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
                     required
                   />
                 </div>
@@ -495,25 +563,182 @@ export default function FarmerPage() {
                   <label className="text-slate-700 font-semibold block mb-1">Baseline Price/Kg (LKR)</label>
                   <input
                     type="number"
+                    min="1"
                     value={pricePerKg}
                     onChange={(e) => setPricePerKg(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
                     required
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              {/* Pre-harvest option */}
+              <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800 block text-xs">Pre-Harvest Advance Booking</span>
+                  <span className="text-[10px] text-slate-500">Allow buyers to contract crop before harvesting</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPreHarvest}
+                    onChange={(e) => setIsPreHarvest(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#064e3b]"></div>
+                </label>
+              </div>
+
+              {/* Crop Photo / Image Selection Section */}
+              <div>
+                <label className="text-slate-700 font-semibold block mb-1.5">
+                  Crop Photo / Image (ඡායාරූපය එක් කරන්න)
+                </label>
+                
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-3">
+                  {/* Preview & Mode Tabs */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0 shadow-2xs">
+                      {photoUrl ? (
+                        <img src={photoUrl} alt="Crop Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                          <ImageIcon className="w-6 h-6" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-1.5 flex-1">
+                      <span className="font-semibold text-slate-800 block text-xs">Choose Image Option</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setPhotoInputMode('file')}
+                          className={`px-2.5 py-1 rounded-lg font-semibold text-[10px] flex items-center gap-1 transition-all ${
+                            photoInputMode === 'file'
+                              ? 'bg-[#064e3b] text-white shadow-2xs'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          <Camera className="w-3 h-3" /> Upload File
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPhotoInputMode('url')}
+                          className={`px-2.5 py-1 rounded-lg font-semibold text-[10px] flex items-center gap-1 transition-all ${
+                            photoInputMode === 'url'
+                              ? 'bg-[#064e3b] text-white shadow-2xs'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          <LinkIcon className="w-3 h-3" /> Image Link
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPhotoInputMode('preset')}
+                          className={`px-2.5 py-1 rounded-lg font-semibold text-[10px] flex items-center gap-1 transition-all ${
+                            photoInputMode === 'preset'
+                              ? 'bg-[#064e3b] text-white shadow-2xs'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          <ImageIcon className="w-3 h-3" /> Sample Photos
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mode 1: File Upload */}
+                  {photoInputMode === 'file' && (
+                    <div>
+                      <label
+                        htmlFor="crop-photo-file-upload"
+                        className="cursor-pointer border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl p-3 flex flex-col items-center justify-center text-center transition-all"
+                      >
+                        <Upload className="w-5 h-5 text-[#064e3b] mb-1" />
+                        <span className="text-xs font-bold text-[#064e3b]">Click to Upload Photo from Device / Camera</span>
+                        <span className="text-[10px] text-slate-500">Supports JPG, PNG, WEBP images</span>
+                        <input
+                          id="crop-photo-file-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Mode 2: URL Input */}
+                  {photoInputMode === 'url' && (
+                    <div>
+                      <input
+                        type="url"
+                        value={photoUrl}
+                        onChange={(e) => setPhotoUrl(e.target.value)}
+                        placeholder="Paste image web URL (e.g. https://...)"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#064e3b]"
+                      />
+                    </div>
+                  )}
+
+                  {/* Mode 3: Preset Sample Photos */}
+                  {photoInputMode === 'preset' && (
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-500 block mb-1">Click a sample photo to select:</span>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { name: 'Leeks', url: 'https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=600&auto=format&fit=crop&q=80' },
+                          { name: 'Carrots', url: 'https://images.unsplash.com/photo-1447175008436-0841719b8b80?w=600&auto=format&fit=crop&q=80' },
+                          { name: 'Paddy', url: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80' },
+                          { name: 'Tomatoes', url: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&auto=format&fit=crop&q=80' },
+                          { name: 'Chili', url: 'https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?w=600&auto=format&fit=crop&q=80' },
+                          { name: 'Onion', url: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=600&auto=format&fit=crop&q=80' },
+                          { name: 'Potato', url: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600&auto=format&fit=crop&q=80' },
+                          { name: 'Greens', url: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80' },
+                        ].map((item) => (
+                          <button
+                            key={item.name}
+                            type="button"
+                            onClick={() => setPhotoUrl(item.url)}
+                            className={`relative rounded-lg overflow-hidden border-2 h-14 transition-all ${
+                              photoUrl === item.url ? 'border-[#064e3b] ring-2 ring-emerald-500' : 'border-transparent opacity-75 hover:opacity-100'
+                            }`}
+                          >
+                            <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                            <span className="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[9px] font-medium text-center py-0.5 truncate px-1">
+                              {item.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-slate-700 font-semibold block mb-1">Produce Notes & Field Description (අමතර විස්තර)</label>
+                <textarea
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Mention moisture level, harvest freshness, packaging or GAP certification details..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none"
+                ></textarea>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-3 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold"
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-4 py-2 rounded-xl shadow-2xs"
+                  className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all"
                 >
                   Publish Listing
                 </button>
