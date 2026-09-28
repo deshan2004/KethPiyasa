@@ -322,7 +322,7 @@ const getLocalFallbackImage = (cropType?: string) => {
   const crop = (cropType || '').toLowerCase();
   if (crop.includes('carrot')) return '/carrot.jpg';
   if (crop.includes('onion')) return '/onion.jpg';
-  if (crop.includes('chili') || crop.includes('tomato')) return '/chili.jpg';
+  if (crop.includes('chili') || crop.includes('tomato')) return '/tomato.jpeg';
   if (crop.includes('paddy') || crop.includes('samba')) return '/samba.jpg';
   if (crop.includes('leek')) return '/leeks.jpg';
   return '/leeks.jpg';
@@ -339,7 +339,7 @@ const normalizePhotoPath = (photo?: string, cropType?: string) => {
   if (normalized.includes('samba.jpg')) return '/samba.jpg';
   if (normalized.includes('onion.jpg')) return '/onion.jpg';
   if (normalized.includes('leeks.jpg')) return '/leeks.jpg';
-  if (normalized.includes('chili.jpg')) return '/chili.jpg';
+  if (normalized.includes('chili.jpg') || normalized.includes('tomato.jpeg') || normalized.includes('tomato')) return '/tomato.jpeg';
 
   if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
     return getLocalFallbackImage(cropType);
