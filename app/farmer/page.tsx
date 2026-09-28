@@ -80,7 +80,7 @@ export default function FarmerPage() {
   const [grade, setGrade] = useState<QualityGrade>('Grade A');
   const [quantityKg, setQuantityKg] = useState<number>(2000);
   const [pricePerKg, setPricePerKg] = useState<number>(135);
-  const [harvestDate, setHarvestDate] = useState('2026-08-30');
+  const [harvestDate, setHarvestDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [locationDistrict, setLocationDistrict] = useState('Nuwara Eliya');
   const [locationHub, setLocationHub] = useState('Nuwara Eliya Central Hub');
   const [isPreHarvest, setIsPreHarvest] = useState(false);
@@ -545,8 +545,8 @@ export default function FarmerPage() {
                 </div>
               </div>
 
-              {/* Quantity & Price */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Quantity, Price & Harvest Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-slate-700 font-semibold block mb-1">Quantity (Kg)</label>
                   <input
@@ -567,6 +567,19 @@ export default function FarmerPage() {
                     value={pricePerKg}
                     onChange={(e) => setPricePerKg(Number(e.target.value))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">
+                    Harvest Date (දිනය) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={harvestDate}
+                    onChange={(e) => setHarvestDate(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 font-semibold text-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-[#064e3b] transition-all"
                     required
                   />
                 </div>
