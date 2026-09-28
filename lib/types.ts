@@ -115,7 +115,7 @@ export interface MarketPriceIndicator {
   cropName: string;
   cropNameSi: string;
   cropNameTa: string;
-  centerName: 'Dambulla' | 'Pettah' | 'Keppetipola' | 'Meegoda';
+  centerName: string;
   minPriceLkr: number;
   maxPriceLkr: number;
   avgPriceLkr: number;
