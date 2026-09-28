@@ -318,6 +318,42 @@ const initialUser: UserProfile = {
   verified: true,
 };
 
+const getLocalFallbackImage = (cropType?: string) => {
+  const crop = (cropType || '').toLowerCase();
+  if (crop.includes('carrot')) return '/carrot.jpg';
+  if (crop.includes('onion')) return '/onion.jpg';
+  if (crop.includes('chili') || crop.includes('tomato')) return '/chili.jpg';
+  if (crop.includes('paddy') || crop.includes('samba')) return '/samba.jpg';
+  if (crop.includes('leek')) return '/leeks.jpg';
+  return '/leeks.jpg';
+};
+
+const normalizePhotoPath = (photo?: string, cropType?: string) => {
+  if (!photo) return getLocalFallbackImage(cropType);
+
+  const normalized = photo.trim();
+  if (!normalized) return getLocalFallbackImage(cropType);
+
+  if (normalized.includes('chill.jpg') || normalized.includes('chill')) return '/chili.jpg';
+  if (normalized.includes('carrot.jpg')) return '/carrot.jpg';
+  if (normalized.includes('samba.jpg')) return '/samba.jpg';
+  if (normalized.includes('onion.jpg')) return '/onion.jpg';
+  if (normalized.includes('leeks.jpg')) return '/leeks.jpg';
+  if (normalized.includes('chili.jpg')) return '/chili.jpg';
+
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+    return getLocalFallbackImage(cropType);
+  }
+
+  return normalized;
+};
+
+const sanitizeSavedListings = (savedListings: ProduceListing[] = []) =>
+  savedListings.map((listing) => ({
+    ...listing,
+    photos: Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos.map((photo) => normalizePhotoPath(photo, listing.cropType)) : [getLocalFallbackImage(listing.cropType)],
+  }));
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -327,7 +363,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('kp_listings');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved) as ProduceListing[];
+          const sanitized = sanitizeSavedListings(parsed);
+          if (JSON.stringify(sanitized) !== saved) {
+            localStorage.setItem('kp_listings', JSON.stringify(sanitized));
+          }
+          return sanitized;
+        }
       } catch {}
     }
     return initialListings;
