@@ -107,7 +107,9 @@ function LoginFormContent() {
     setLoading(true);
 
     try {
-      await login(email.trim(), password, selectedRole as UserRole);
+      const loggedUser = await login(email.trim(), password, selectedRole as UserRole);
+
+      const actualRole = loggedUser?.role || selectedRole;
 
       setSuccessMsg(
         lang === 'si'
@@ -119,9 +121,11 @@ function LoginFormContent() {
 
       const targetRoute =
         redirectPath ||
-        (selectedRole === 'farmer'
+        (actualRole === 'admin'
+          ? '/admin'
+          : actualRole === 'farmer'
           ? '/farmer'
-          : selectedRole === 'buyer'
+          : actualRole === 'buyer'
           ? '/buyer'
           : '/logistics');
 

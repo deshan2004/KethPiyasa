@@ -33,7 +33,7 @@ interface AuthContextType {
     email: string,
     password: string,
     selectedRole: UserRole
-  ) => Promise<void>;
+  ) => Promise<UserProfile>;
   register: (
     email: string,
     password: string,
@@ -157,7 +157,7 @@ export const AuthProvider: React.FC<{
     email: string,
     password: string,
     selectedRole: UserRole
-  ) => {
+  ): Promise<UserProfile> => {
     const result = await signInWithEmailAndPassword(
       auth,
       email,
@@ -176,9 +176,10 @@ export const AuthProvider: React.FC<{
     const profile = userSnap.data() as UserProfile;
 
     /*
-     * Check selected role
+     * Allow Admin to log in from any selected role interface.
+     * Block only if a non-admin account role does not match selectedRole.
      */
-    if (profile.role !== selectedRole) {
+    if (profile.role !== selectedRole && profile.role !== 'admin') {
       await signOut(auth);
 
       throw new Error(
@@ -188,6 +189,7 @@ export const AuthProvider: React.FC<{
 
     setUser(profile);
     setRole(profile.role);
+    return profile;
   };
 
   /*
