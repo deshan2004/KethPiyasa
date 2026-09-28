@@ -29,6 +29,7 @@ import { auth, db } from './firebase';
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
+<<<<<<< HEAD
   login: (
     email: string,
     password: string,
@@ -42,12 +43,105 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+=======
+  login: (emailOrPhone: string, role: UserRole) => void;
+  register: (profileData: Omit<UserProfile, 'id' | 'verified'>) => void;
+  updateProfile: (updatedData: Partial<UserProfile>) => void;
+  logout: () => void;
+}
+
+export const defaultProfiles: Record<UserRole, UserProfile> = {
+  farmer: {
+    id: 'usr-farmer-01',
+    name: 'Bandara Organic Farms',
+    role: 'farmer',
+    nicOrBrn: '781920394V',
+    phone: '+94 77 123 4567',
+    district: 'Nuwara Eliya',
+    bankAccount: {
+      bankName: 'Commercial Bank of Ceylon',
+      accountNumber: '8001928374',
+      branchName: 'Nuwara Eliya Branch',
+      verified: true,
+    },
+    nicVerified: true,
+    bankVerified: true,
+    verified: true,
+  },
+  buyer: {
+    id: 'usr-buyer-01',
+    name: 'Keells Agri Procurement',
+    role: 'buyer',
+    nicOrBrn: 'BRN-2024-98124',
+    phone: '+94 11 234 5678',
+    district: 'Colombo',
+    bankAccount: {
+      bankName: 'Hatton National Bank',
+      accountNumber: '1002938475',
+      branchName: 'Head Office Colombo',
+      verified: true,
+    },
+    nicVerified: true,
+    bankVerified: true,
+    verified: true,
+  },
+  logistics: {
+    id: 'usr-log-01',
+    name: 'Lanka Logistics Express',
+    role: 'logistics',
+    nicOrBrn: 'BRN-2022-44120',
+    phone: '+94 71 444 5566',
+    district: 'Colombo',
+    bankAccount: {
+      bankName: 'Sampath Bank PLC',
+      accountNumber: '0092817263',
+      branchName: 'Welisara Hub Branch',
+      verified: true,
+    },
+    nicVerified: true,
+    bankVerified: true,
+    verified: true,
+  },
+  admin: {
+    id: 'usr-admin-01',
+    name: 'Dambulla Agri Governance',
+    role: 'admin',
+    nicOrBrn: 'GOV-SL-89201',
+    phone: '+94 66 222 3344',
+    district: 'Dambulla',
+    bankAccount: {
+      bankName: 'Central Bank of Sri Lanka',
+      accountNumber: '0000111222',
+      branchName: 'Colombo HQ',
+      verified: true,
+    },
+    nicVerified: true,
+    bankVerified: true,
+    verified: true,
+  },
+};
+
+>>>>>>> main
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const { setRole } = useApp();
+<<<<<<< HEAD
+=======
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedAuth = localStorage.getItem('kp_auth_user');
+        if (savedAuth) return JSON.parse(savedAuth);
+      } catch {
+        // ignore
+      }
+    }
+    return null;
+  });
+>>>>>>> main
 
   const [user, setUser] = useState<UserProfile | null>(null);
 
@@ -55,6 +149,7 @@ export const AuthProvider: React.FC<{
    * Firebase authentication state listener
    */
   useEffect(() => {
+<<<<<<< HEAD
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
         setUser(null);
@@ -114,11 +209,30 @@ export const AuthProvider: React.FC<{
         `This account is registered as ${profile.role}, not ${selectedRole}.`
       );
     }
+=======
+    if (user?.role) {
+      setRole(user.role);
+    }
+  }, [user, setRole]);
+
+  const login = (emailOrPhone: string, selectedRole: UserRole) => {
+    const profile = defaultProfiles[selectedRole] || {
+      id: `usr-${Date.now()}`,
+      name: emailOrPhone.includes('@') ? emailOrPhone.split('@')[0] : 'Sri Lanka Registered User',
+      role: selectedRole,
+      nicOrBrn: '891029384V',
+      phone: emailOrPhone,
+      district: 'Colombo',
+      bankAccount: { bankName: 'Bank of Ceylon', accountNumber: '77281923', branchName: 'Main' },
+      verified: true,
+    };
+>>>>>>> main
 
     setUser(profile);
     setRole(profile.role);
   };
 
+<<<<<<< HEAD
   /*
    * REGISTER
    */
@@ -157,6 +271,40 @@ export const AuthProvider: React.FC<{
   const logout = async () => {
     await signOut(auth);
 
+=======
+  const register = (profileData: Omit<UserProfile, 'id' | 'verified'>) => {
+    // Prevent registering as admin
+    const safeRole: UserRole = profileData.role === 'admin' ? 'farmer' : profileData.role;
+    
+    const newProfile: UserProfile = {
+      ...profileData,
+      role: safeRole,
+      id: `usr-${Date.now()}`,
+      verified: true,
+    };
+
+    setUser(newProfile);
+    setRole(safeRole);
+    try {
+      localStorage.setItem('kp_auth_user', JSON.stringify(newProfile));
+    } catch {
+      // ignore
+    }
+  };
+
+  const updateProfile = (updatedData: Partial<UserProfile>) => {
+    if (!user) return;
+    const updated = { ...user, ...updatedData };
+    setUser(updated);
+    try {
+      localStorage.setItem('kp_auth_user', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
+  const logout = () => {
+>>>>>>> main
     setUser(null);
   };
 
@@ -167,6 +315,7 @@ export const AuthProvider: React.FC<{
         isAuthenticated: !!user,
         login,
         register,
+        updateProfile,
         logout,
       }}
     >

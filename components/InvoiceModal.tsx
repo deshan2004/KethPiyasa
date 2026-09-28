@@ -15,7 +15,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
         {/* Modal Header */}
         <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
@@ -48,7 +48,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-black tracking-tight text-white">🌾 KethPiyasa</span>
                 <span className="text-xs bg-emerald-950 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-800">
-                  කෙත්පියස B2B
+                  B2B Official
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">Direct Farmer-to-Buyer B2B Marketplace Platform</p>

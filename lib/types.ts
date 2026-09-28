@@ -148,6 +148,9 @@ export interface UserProfile {
     bankName: string;
     accountNumber: string;
     branchName: string;
+    verified?: boolean;
   };
+  nicVerified?: boolean;
+  bankVerified?: boolean;
   verified: boolean;
 }

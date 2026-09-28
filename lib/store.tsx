@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import {
   UserRole,
   Language,
@@ -38,11 +38,12 @@ interface AppContextType {
 
 const initialMarketPrices: MarketPriceIndicator[] = [
   { id: 'mp-1', cropName: 'Premium Leeks', cropNameSi: 'ලීක්ස්', cropNameTa: 'லீக்ஸ்', centerName: 'Dambulla', minPriceLkr: 125, maxPriceLkr: 145, avgPriceLkr: 135, change24h: 3.8, unit: 'Kg', updatedAt: 'Today 06:00 AM' },
-  { id: 'mp-2', cropName: 'Washed Carrots', cropNameSi: 'කැරට්', cropNameTa: 'கேரட்', centerName: 'Dambulla', minPriceLkr: 88, maxPriceLkr: 105, avgPriceLkr: 95, change24h: -1.2, unit: 'Kg', updatedAt: 'Today 06:00 AM' },
+  { id: 'mp-2', cropName: 'Washed Carrots', cropNameSi: 'කැරට්', cropNameTa: 'கேரட்', centerName: 'Nuwara Eliya', minPriceLkr: 88, maxPriceLkr: 105, avgPriceLkr: 95, change24h: -1.2, unit: 'Kg', updatedAt: 'Today 06:00 AM' },
   { id: 'mp-3', cropName: 'Green Chili', cropNameSi: 'අමු මිරිස්', cropNameTa: 'பச்சை மிளகாய்', centerName: 'Pettah', minPriceLkr: 300, maxPriceLkr: 350, avgPriceLkr: 320, change24h: 6.5, unit: 'Kg', updatedAt: 'Today 06:30 AM' },
   { id: 'mp-4', cropName: 'Keeri Samba Paddy', cropNameSi: 'කීරි සම්බා වී', cropNameTa: 'கீரி சம்பா நெல்', centerName: 'Keppetipola', minPriceLkr: 138, maxPriceLkr: 152, avgPriceLkr: 145, change24h: 1.5, unit: 'Kg', updatedAt: 'Today 05:45 AM' },
   { id: 'mp-5', cropName: 'Jaffna Red Onions', cropNameSi: 'රතු ලූණු', cropNameTa: 'சின்ன வெங்காயம்', centerName: 'Meegoda', minPriceLkr: 260, maxPriceLkr: 295, avgPriceLkr: 280, change24h: 0.0, unit: 'Kg', updatedAt: 'Today 07:00 AM' },
-  { id: 'mp-6', cropName: 'Ripe Tomatoes', cropNameSi: 'තක්කාලි', cropNameTa: 'தக்காளி', centerName: 'Dambulla', minPriceLkr: 100, maxPriceLkr: 120, avgPriceLkr: 110, change24h: -4.2, unit: 'Kg', updatedAt: 'Today 06:15 AM' },
+  { id: 'mp-6', cropName: 'Ripe Tomatoes', cropNameSi: 'තක්කාලි', cropNameTa: 'தக்காளி', centerName: 'Thambuttegama', minPriceLkr: 100, maxPriceLkr: 120, avgPriceLkr: 110, change24h: -4.2, unit: 'Kg', updatedAt: 'Today 06:15 AM' },
+  { id: 'mp-7', cropName: 'Highland Potatoes', cropNameSi: 'අර්තාපල්', cropNameTa: 'உருளைக்கிழங்கு', centerName: 'Kandy', minPriceLkr: 180, maxPriceLkr: 210, avgPriceLkr: 195, change24h: 2.1, unit: 'Kg', updatedAt: 'Today 06:45 AM' },
 ];
 
 const initialListings: ProduceListing[] = [
@@ -304,15 +305,15 @@ const initialDisputes: DisputeTicket[] = [
 
 const initialUser: UserProfile = {
   id: 'usr-001',
-  name: 'Deshan Siriwardhna',
-  role: 'buyer',
-  nicOrBrn: 'OTH/IT/IT_UGC_001/B005-B/0009',
-  phone: '+94 77 000 1122',
-  district: 'Colombo',
+  name: 'Bandara Organic Farms',
+  role: 'farmer',
+  nicOrBrn: '781920394V',
+  phone: '+94 77 123 4567',
+  district: 'Nuwara Eliya',
   bankAccount: {
     bankName: 'Commercial Bank of Ceylon',
     accountNumber: '8001928374',
-    branchName: 'Head Office Branch',
+    branchName: 'Nuwara Eliya Branch',
   },
   verified: true,
 };
@@ -322,29 +323,45 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [role, setRole] = useState<UserRole>('buyer');
   const [lang, setLang] = useState<Language>('en');
-  const [listings, setListings] = useState<ProduceListing[]>(initialListings);
-  const [offers, setOffers] = useState<NegotiationOffer[]>(initialOffers);
-  const [contracts, setContracts] = useState<EscrowContract[]>(initialContracts);
-  const [shipments, setShipments] = useState<ShipmentJob[]>(initialShipments);
+  const [listings, setListings] = useState<ProduceListing[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kp_listings');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return initialListings;
+  });
+  const [offers, setOffers] = useState<NegotiationOffer[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kp_offers');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return initialOffers;
+  });
+  const [contracts, setContracts] = useState<EscrowContract[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kp_contracts');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return initialContracts;
+  });
+  const [shipments, setShipments] = useState<ShipmentJob[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kp_shipments');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return initialShipments;
+  });
   const [marketPrices, setMarketPrices] = useState<MarketPriceIndicator[]>(initialMarketPrices);
   const [disputes, setDisputes] = useState<DisputeTicket[]>(initialDisputes);
   const [currentUser] = useState<UserProfile>(initialUser);
-
-  // Persistence in LocalStorage
-  useEffect(() => {
-    try {
-      const savedListings = localStorage.getItem('kp_listings');
-      if (savedListings) setListings(JSON.parse(savedListings));
-      const savedOffers = localStorage.getItem('kp_offers');
-      if (savedOffers) setOffers(JSON.parse(savedOffers));
-      const savedContracts = localStorage.getItem('kp_contracts');
-      if (savedContracts) setContracts(JSON.parse(savedContracts));
-      const savedShipments = localStorage.getItem('kp_shipments');
-      if (savedShipments) setShipments(JSON.parse(savedShipments));
-    } catch {
-      // Fallback to initial state
-    }
-  }, []);
 
   const saveState = (key: string, data: unknown) => {
     try {

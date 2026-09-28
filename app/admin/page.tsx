@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/lib/auth';
 import { useApp } from '@/lib/store';
 import { getTranslation } from '@/lib/i18n';
 import {
@@ -14,12 +16,45 @@ import {
   TrendingUp,
   Edit,
   Save,
-  Layers
+  Layers,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 
 export default function AdminPage() {
+  const { user } = useAuth();
   const { marketPrices, updateMarketPrice, contracts, disputes, resolveDispute, lang } = useApp();
   const t = getTranslation(lang);
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="max-w-xl mx-auto my-12 bg-white border border-slate-200 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-sm">
+        <div className="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-800 flex items-center justify-center mx-auto border border-indigo-200 shadow-2xs">
+          <ShieldCheck className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">System Admin Access Restricted</h2>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            You must be authenticated with System Administrator credentials to view governance analytics and moderation controls.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Link
+            href="/login?role=admin"
+            className="w-full sm:w-auto bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs px-6 py-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5"
+          >
+            <LogIn className="w-4 h-4" /> Login as System Admin
+          </Link>
+          <Link
+            href="/"
+            className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-6 py-3 rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1.5"
+          >
+            Return to Marketplace
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const [activeTab, setActiveTab] = useState<'users' | 'escrow' | 'disputes' | 'prices'>('users');
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);

@@ -24,9 +24,9 @@ KethPiyasa is a full-stack B2B digital marketplace engineered to streamline Sri 
 | **Frontend** | Next.js (TypeScript) |
 | **Styling** | Tailwind CSS (Mobile-First Architecture) |
 | **Backend API** | Node.js, Express.js |
-| **Database & Realtime** | Firebase Firestore |
-| **Authentication** | Firebase Auth (SMS OTP, Email, NIC Verification) |
-| **Storage** | Firebase Cloud Storage |
+| **Database & Realtime** | Cloud Store |
+| **Authentication** | Secure Auth (SMS OTP, Email, NIC Verification) |
+| **Storage** | Cloud Storage |
 | **Version Control** | Git & GitHub |
 
 ---
@@ -44,7 +44,6 @@ KethPiyasa is a full-stack B2B digital marketplace engineered to streamline Sri 
 ### Prerequisites
 * Node.js (v18.x or later)
 * npm or yarn
-* Firebase Account & Project Configuration
 
 ### 1. Clone the repository
 ```bash
