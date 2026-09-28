@@ -90,10 +90,15 @@ export default function FarmerPage() {
   const [description, setDescription] = useState('');
   
   // Image / Photo state
-  const [photoUrl, setPhotoUrl] = useState<string>(
-    'https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=600&auto=format&fit=crop&q=80'
-  );
+  const [photoUrl, setPhotoUrl] = useState<string>('/leeks.jpg');
   const [photoInputMode, setPhotoInputMode] = useState<'preset' | 'file' | 'url'>('preset');
+
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = event.currentTarget;
+    if (!target.src.endsWith('/leeks.jpg')) {
+      target.src = '/leeks.jpg';
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -111,7 +116,7 @@ export default function FarmerPage() {
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalCrop = cropType.trim() || 'Produce Listing';
-    const finalPhoto = photoUrl || 'https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=600&auto=format&fit=crop&q=80';
+    const finalPhoto = photoUrl || '/leeks.jpg';
 
     addListing({
       title: title || `${grade} ${finalCrop} (${locationDistrict})`,
@@ -613,7 +618,12 @@ export default function FarmerPage() {
                   <div className="flex items-center gap-3">
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0 shadow-2xs">
                       {photoUrl ? (
-                        <img src={photoUrl} alt="Crop Preview" className="w-full h-full object-cover" />
+                        <img
+                          src={photoUrl}
+                          alt="Crop Preview"
+                          className="w-full h-full object-cover"
+                          onError={handleImageError}
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-400">
                           <ImageIcon className="w-6 h-6" />
@@ -700,14 +710,14 @@ export default function FarmerPage() {
                       <span className="text-[10px] font-semibold text-slate-500 block mb-1">Click a sample photo to select:</span>
                       <div className="grid grid-cols-4 gap-2">
                         {[
-                          { name: 'Leeks', url: 'https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=600&auto=format&fit=crop&q=80' },
-                          { name: 'Carrots', url: 'https://images.unsplash.com/photo-1447175008436-0841719b8b80?w=600&auto=format&fit=crop&q=80' },
-                          { name: 'Paddy', url: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80' },
-                          { name: 'Tomatoes', url: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&auto=format&fit=crop&q=80' },
-                          { name: 'Chili', url: 'https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?w=600&auto=format&fit=crop&q=80' },
-                          { name: 'Onion', url: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=600&auto=format&fit=crop&q=80' },
-                          { name: 'Potato', url: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600&auto=format&fit=crop&q=80' },
-                          { name: 'Greens', url: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=80' },
+                          { name: 'Leeks', url: '/leeks.jpg' },
+                          { name: 'Carrots', url: '/carrot.jpg' },
+                          { name: 'Paddy', url: '/samba.jpg' },
+                          { name: 'Tomatoes', url: '/chili.jpg' },
+                          { name: 'Chili', url: '/chili.jpg' },
+                          { name: 'Onion', url: '/onion.jpg' },
+                          { name: 'Potato', url: '/carrot.jpg' },
+                          { name: 'Greens', url: '/leeks.jpg' },
                         ].map((item) => (
                           <button
                             key={item.name}
@@ -717,7 +727,12 @@ export default function FarmerPage() {
                               photoUrl === item.url ? 'border-[#064e3b] ring-2 ring-emerald-500' : 'border-transparent opacity-75 hover:opacity-100'
                             }`}
                           >
-                            <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                            <img
+                              src={item.url}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={handleImageError}
+                            />
                             <span className="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[9px] font-medium text-center py-0.5 truncate px-1">
                               {item.name}
                             </span>
