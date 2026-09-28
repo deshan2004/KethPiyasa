@@ -4,13 +4,14 @@ import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { useApp } from '@/lib/store';
+import { getTranslation } from '@/lib/i18n';
 import { UserRole } from '@/lib/types';
 
 import {
   Sprout,
   ShoppingBag,
   Truck,
-  ShieldCheck,
   Mail,
   Lock,
   ArrowRight,
@@ -18,14 +19,18 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
+type MainRole = 'farmer' | 'buyer' | 'logistics';
+
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const redirectPath = searchParams.get('redirect');
   const { login } = useAuth();
+  const { lang } = useApp();
+  const t = getTranslation(lang);
 
-  const [selectedRole, setSelectedRole] = useState<UserRole>('buyer');
+  const [selectedRole, setSelectedRole] = useState<MainRole>('buyer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -34,7 +39,7 @@ function LoginFormContent() {
   const [loading, setLoading] = useState(false);
 
   const roleDetails: Record<
-    UserRole,
+    MainRole,
     {
       title: string;
       desc: string;
@@ -43,31 +48,54 @@ function LoginFormContent() {
     }
   > = {
     farmer: {
-      title: 'Farmer Producer (ගොවි ද්වාරය)',
-      desc: 'Post crops, receive direct buyer quotations, counter-offer, and track bank payouts.',
+      title:
+        lang === 'si'
+          ? 'ගොවි නිෂ්පාදක (ගොවි ද්වාරය)'
+          : lang === 'ta'
+          ? 'விவசாய உற்பத்தியாளர் (விவசாயி போர்ட்டல்)'
+          : 'Farmer Producer',
+      desc:
+        lang === 'si'
+          ? 'අස්වැන්න පළ කරන්න, ගැනුම්කරුවන්ගේ මිල ගණන් ලබා ගන්න, සහ බැංකු ගෙවීම් පරීක්ෂා කරන්න.'
+          : lang === 'ta'
+          ? 'பயிர்களைப் பதிவிடவும், வாங்குபவர் மேற்கோள்களைப் பெறவும், வங்கிப் பணத்தைக் கண்காணிக்கவும்.'
+          : 'Post crops, receive direct buyer quotations, counter-offer, and track bank payouts.',
       icon: <Sprout className="w-5 h-5 text-white" />,
       color: 'bg-[#064e3b] text-white',
     },
 
     buyer: {
-      title: 'Commercial Buyer (වාණිජ මිලදී ගන්නා)',
-      desc: 'Search bulk crops, verify quality grades, request quotes, and secure escrow deposits.',
+      title:
+        lang === 'si'
+          ? 'වාණිජ මිලදී ගන්නා (මිලදී ගැනුම්කරු)'
+          : lang === 'ta'
+          ? 'வணிக ரீதியாக வாங்குபவர் (கொள்முதல் போர்ட்டல்)'
+          : 'Commercial Buyer',
+      desc:
+        lang === 'si'
+          ? 'තොග අස්වැන්න සොයන්න, ගුණාත්මකභාවය පරීක්ෂා කරන්න, සහ ඇස්ක්‍රෝ තැන්පතු තහවුරු කරන්න.'
+          : lang === 'ta'
+          ? 'மொத்த பயிர்களைத் தேடுங்கள், தர நிலைகளைச் சரிபார்க்கவும், எஸ்க்ரோ வைப்புகளைப் பாதுகாக்கவும்.'
+          : 'Search bulk crops, verify quality grades, request quotes, and secure escrow deposits.',
       icon: <ShoppingBag className="w-5 h-5 text-white" />,
       color: 'bg-amber-600 text-white',
     },
 
     logistics: {
-      title: 'Logistics Hauler (ප්‍රවාහන පාර්ශවකරු)',
-      desc: 'View available freight jobs, update route checkpoints, and verify QR deliveries.',
+      title:
+        lang === 'si'
+          ? 'ප්‍රවාහන පාර්ශවකරු (ප්‍රවාහන ද්වාරය)'
+          : lang === 'ta'
+          ? 'போக்குவரத்து சேவை (போக்குவரத்து போர்ட்டல்)'
+          : 'Logistics Hauler',
+      desc:
+        lang === 'si'
+          ? 'ලබා ගත හැකි ප්‍රවාහන රැකියා බලන්න, මාර්ග සටහන් යාවත්කාලීන කරන්න, සහ QR බෙදාහැරීම් පරීක්ෂා කරන්න.'
+          : lang === 'ta'
+          ? 'கிடைக்கக்கூடிய சரக்கு வேலைகளைப் பார்க்கவும், வழிகளைப் புதுப்பிக்கவும், QR விநியோகங்களைச் சரிபார்க்கவும்.'
+          : 'View available freight jobs, update route checkpoints, and verify QR deliveries.',
       icon: <Truck className="w-5 h-5 text-white" />,
       color: 'bg-blue-600 text-white',
-    },
-
-    admin: {
-      title: 'System Admin (පරිපාලක ද්වාරය)',
-      desc: 'Verify identity records, monitor escrow ledgers, moderate disputes, and set market prices.',
-      icon: <ShieldCheck className="w-5 h-5 text-white" />,
-      color: 'bg-indigo-600 text-white',
     },
   };
 
@@ -79,9 +107,15 @@ function LoginFormContent() {
     setLoading(true);
 
     try {
-      await login(email.trim(), password, selectedRole);
+      await login(email.trim(), password, selectedRole as UserRole);
 
-      setSuccessMsg('Login successful. Redirecting...');
+      setSuccessMsg(
+        lang === 'si'
+          ? 'ලොග් වීම සාර්ථකයි. පිවිසෙමින් පවතී...'
+          : lang === 'ta'
+          ? 'உள்நுழைவு வெற்றி. திசைதிருப்பப்படுகிறது...'
+          : 'Login successful. Redirecting...'
+      );
 
       const targetRoute =
         redirectPath ||
@@ -89,9 +123,7 @@ function LoginFormContent() {
           ? '/farmer'
           : selectedRole === 'buyer'
           ? '/buyer'
-          : selectedRole === 'logistics'
-          ? '/logistics'
-          : '/admin');
+          : '/logistics');
 
       setTimeout(() => {
         router.push(targetRoute);
@@ -101,19 +133,46 @@ function LoginFormContent() {
 
       if (error?.code === 'auth/invalid-credential') {
         setErrorMsg(
-          'Invalid email or password. Please check your credentials.'
+          lang === 'si'
+            ? 'විද්‍යුත් තැපෑල හෝ මුරපදය වැරදියි. කරුණාකර නැවත පරීක්ෂා කරන්න.'
+            : lang === 'ta'
+            ? 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல். சரிபார்க்கவும்.'
+            : 'Invalid email or password. Please check your credentials.'
         );
       } else if (error?.code === 'auth/user-not-found') {
-        setErrorMsg('No account found with this email address.');
+        setErrorMsg(
+          lang === 'si'
+            ? 'මෙම විද්‍යුත් තැපෑලෙන් ගිණුමක් හමු නොවීය.'
+            : lang === 'ta'
+            ? 'இந்த மின்னஞ்சலில் கணக்கு எதுவும் இல்லை.'
+            : 'No account found with this email address.'
+        );
       } else if (error?.code === 'auth/wrong-password') {
-        setErrorMsg('Incorrect password.');
+        setErrorMsg(
+          lang === 'si'
+            ? 'මුරපදය වැරදියි.'
+            : lang === 'ta'
+            ? 'தவறான கடவுச்சொல்.'
+            : 'Incorrect password.'
+        );
       } else if (error?.code === 'auth/invalid-email') {
-        setErrorMsg('Please enter a valid email address.');
+        setErrorMsg(
+          lang === 'si'
+            ? 'කරුණාකර නිවැරදි විද්‍යුත් තැපැල් ලිපිනයක් ඇතුළත් කරන්න.'
+            : lang === 'ta'
+            ? 'செல்லுபடியாகும் மின்னஞ்சல் முகவரியை உள்ளிடவும்.'
+            : 'Please enter a valid email address.'
+        );
       } else if (error?.message?.includes('registered as')) {
         setErrorMsg(error.message);
       } else {
         setErrorMsg(
-          error?.message || 'Login failed. Please try again.'
+          error?.message ||
+            (lang === 'si'
+              ? 'ලොග් වීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.'
+              : lang === 'ta'
+              ? 'உள்நுழைவு தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.'
+              : 'Login failed. Please try again.')
         );
       }
     } finally {
@@ -127,21 +186,21 @@ function LoginFormContent() {
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 bg-[#064e3b] text-white text-xs font-bold px-3.5 py-1 rounded-full shadow-xs">
           <Sprout className="w-4 h-4" />
-          <span>KethPiyasa Firebase Authentication</span>
+          <span>{t.loginBadge}</span>
         </div>
 
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-          Select Role & Log In
+          {t.loginHeaderTitle}
         </h1>
 
         <p className="text-xs text-slate-500">
-          Access your personalized B2B portal using your registered email and password.
+          {t.loginHeaderDesc}
         </p>
       </div>
 
-      {/* Role Selection */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-2xs text-xs font-bold">
-        {(Object.keys(roleDetails) as UserRole[]).map((rKey) => {
+      {/* Role Selection - Only Farmer, Buyer, Logistics */}
+      <div className="grid grid-cols-3 gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-2xs text-xs font-bold">
+        {(['farmer', 'buyer', 'logistics'] as MainRole[]).map((rKey) => {
           const isSelected = selectedRole === rKey;
 
           return (
@@ -199,7 +258,7 @@ function LoginFormContent() {
         {/* Email */}
         <div>
           <label className="text-slate-700 font-semibold block mb-1">
-            Email Address
+            {t.emailLabel}
           </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -207,7 +266,7 @@ function LoginFormContent() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
+              placeholder={t.emailPlaceholder}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
               required
               autoComplete="email"
@@ -218,7 +277,7 @@ function LoginFormContent() {
         {/* Password */}
         <div>
           <label className="text-slate-700 font-semibold block mb-1">
-            Password
+            {t.passwordLabel}
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -226,7 +285,7 @@ function LoginFormContent() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t.passwordPlaceholder}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
               required
               autoComplete="current-password"
@@ -245,11 +304,11 @@ function LoginFormContent() {
           {loading ? (
             <>
               <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-              <span>Signing In...</span>
+              <span>{t.loginBtn}...</span>
             </>
           ) : (
             <>
-              <span>Log In as {selectedRole.toUpperCase()}</span>
+              <span>{t.loginBtn} ({selectedRole.toUpperCase()})</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
@@ -257,9 +316,9 @@ function LoginFormContent() {
 
         {/* Register */}
         <div className="pt-2 text-center text-slate-500 text-[11px]">
-          Don&apos;t have an account?{' '}
+          {t.noAccount}{' '}
           <Link href="/register" className="text-[#064e3b] font-bold underline">
-            Register new account
+            {t.registerLink}
           </Link>
         </div>
       </form>
@@ -272,7 +331,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="p-8 text-center text-xs font-bold text-slate-500">
-          Loading Login...
+          Loading...
         </div>
       }
     >

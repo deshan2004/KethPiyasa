@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import { useAuth } from '@/lib/auth';
+import { useApp } from '@/lib/store';
+import { getTranslation } from '@/lib/i18n';
 import { UserRole } from '@/lib/types';
 
 import {
@@ -21,21 +23,25 @@ import {
   Landmark,
 } from 'lucide-react';
 
+type MainRole = 'farmer' | 'buyer' | 'logistics';
+
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
+  const { lang } = useApp();
+  const t = getTranslation(lang);
 
   const [name, setName] = useState('');
-  const [role, setRole] = useState<UserRole>('farmer');
+  const [role, setRole] = useState<MainRole>('farmer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [nicOrBrn, setNicOrBrn] = useState('');
   const [phone, setPhone] = useState('');
   const [district, setDistrict] = useState('Nuwara Eliya');
-  const [bankName, setBankName] = useState('Commercial Bank of Ceylon');
+  const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
-  const [branchName, setBranchName] = useState('Main Branch');
+  const [branchName, setBranchName] = useState('');
 
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -48,32 +54,68 @@ export default function RegisterPage() {
     setSuccessMsg('');
 
     if (password.length < 6) {
-      setErrorMsg('Password must contain at least 6 characters.');
+      setErrorMsg(
+        lang === 'si'
+          ? 'මුරපදයේ අවම වශයෙන් අක්ෂර 6ක් තිබිය යුතුය.'
+          : lang === 'ta'
+          ? 'கடவுச்சொல் குறைந்தது 6 எழுத்துக்களைக் கொண்டிருக்க வேண்டும்.'
+          : 'Password must contain at least 6 characters.'
+      );
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMsg('Passwords do not match.');
+      setErrorMsg(
+        lang === 'si'
+          ? 'මුරපද එකිනෙකට ගැලපෙන්නේ නැත.'
+          : lang === 'ta'
+          ? 'கடவுச்சொற்கள் பொருந்தவில்லை.'
+          : 'Passwords do not match.'
+      );
       return;
     }
 
     if (!email.trim()) {
-      setErrorMsg('Please enter your email address.');
+      setErrorMsg(
+        lang === 'si'
+          ? 'කරුණාකර විද්‍යුත් තැපැල් ලිපිනය ඇතුළත් කරන්න.'
+          : lang === 'ta'
+          ? 'மின்னஞ்சல் முகவரியை உள்ளிடவும்.'
+          : 'Please enter your email address.'
+      );
       return;
     }
 
     if (!name.trim()) {
-      setErrorMsg('Please enter your name or enterprise name.');
+      setErrorMsg(
+        lang === 'si'
+          ? 'කරුණාකර ඔබගේ නම හෝ ගොවිපළේ නම ඇතුළත් කරන්න.'
+          : lang === 'ta'
+          ? 'உங்கள் பெயரை அல்லது பண்ணை பெயரை உள்ளிடவும்.'
+          : 'Please enter your name or enterprise name.'
+      );
       return;
     }
 
     if (!nicOrBrn.trim()) {
-      setErrorMsg('Please enter your NIC or Business Registration Number.');
+      setErrorMsg(
+        lang === 'si'
+          ? 'කරුණාකර ජාතික හැඳුනුම්පත් හෝ ව්‍යාපාර ලියාපදිංචි අංකය ඇතුළත් කරන්න.'
+          : lang === 'ta'
+          ? 'தேசிய அடையாள அட்டை அல்லது வணிக பதிவை உள்ளிடவும்.'
+          : 'Please enter your NIC or Business Registration Number.'
+      );
       return;
     }
 
     if (!phone.trim()) {
-      setErrorMsg('Please enter your mobile phone number.');
+      setErrorMsg(
+        lang === 'si'
+          ? 'කරුණාකර ජංගම දුරකථන අංකය ඇතුළත් කරන්න.'
+          : lang === 'ta'
+          ? 'கைப்பேசி எண்ணை உள்ளிடவும்.'
+          : 'Please enter your mobile phone number.'
+      );
       return;
     }
 
@@ -82,7 +124,7 @@ export default function RegisterPage() {
     try {
       await register(email.trim(), password, {
         name: name.trim(),
-        role,
+        role: role as UserRole,
         nicOrBrn: nicOrBrn.trim(),
         phone: phone.trim(),
         district,
@@ -96,16 +138,20 @@ export default function RegisterPage() {
         bankVerified: false,
       });
 
-      setSuccessMsg('Account created successfully. Redirecting...');
+      setSuccessMsg(
+        lang === 'si'
+          ? 'ගිණුම සාර්ථකව සාදන ලදී. පිවිසෙමින් පවතී...'
+          : lang === 'ta'
+          ? 'கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது. திசைதிருப்பப்படுகிறது...'
+          : 'Account created successfully. Redirecting...'
+      );
 
       const targetRoute =
         role === 'farmer'
           ? '/farmer'
           : role === 'buyer'
           ? '/buyer'
-          : role === 'logistics'
-          ? '/logistics'
-          : '/admin';
+          : '/logistics';
 
       setTimeout(() => {
         router.push(targetRoute);
@@ -114,23 +160,38 @@ export default function RegisterPage() {
       console.error('Registration error:', error);
 
       if (error?.code === 'auth/email-already-in-use') {
-        setErrorMsg('This email address is already registered.');
-      } else if (error?.code === 'auth/invalid-email') {
-        setErrorMsg('Please enter a valid email address.');
-      } else if (error?.code === 'auth/weak-password') {
-        setErrorMsg('Password is too weak. Please use at least 6 characters.');
-      } else if (error?.code === 'auth/network-request-failed') {
-        setErrorMsg('Network error. Please check your internet connection.');
-      } else if (
-        error?.code === 'permission-denied' ||
-        error?.message?.includes('permission') ||
-        error?.message?.includes('insufficient permissions')
-      ) {
         setErrorMsg(
-          'Firestore permission is blocked. Please allow writes to /users/{uid} in Firebase Security Rules.'
+          lang === 'si'
+            ? 'මෙම විද්‍යුත් තැපැල් ලිපිනයෙන් දැනටමත් ගිණුමක් සාදා ඇත.'
+            : lang === 'ta'
+            ? 'இந்த மின்னஞ்சல் முகவரி ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது.'
+            : 'This email address is already registered.'
+        );
+      } else if (error?.code === 'auth/invalid-email') {
+        setErrorMsg(
+          lang === 'si'
+            ? 'කරුණාකර නිවැරදි විද්‍යුත් තැපැල් ලිපිනයක් ඇතුළත් කරන්න.'
+            : lang === 'ta'
+            ? 'செல்லுபடியாகும் மின்னஞ்சல் முகவரியை உள்ளிடவும்.'
+            : 'Please enter a valid email address.'
+        );
+      } else if (error?.code === 'auth/weak-password') {
+        setErrorMsg(
+          lang === 'si'
+            ? 'මුරපදය ප්‍රමාණවත් නොවේ. අවම වශයෙන් අක්ෂර 6ක් භාවිතා කරන්න.'
+            : lang === 'ta'
+            ? 'கடவுச்சொல் மிகவும் பலவீனமாக உள்ளது. குறைந்தது 6 எழுத்துக்களைப் பயன்படுத்தவும்.'
+            : 'Password is too weak. Please use at least 6 characters.'
         );
       } else {
-        setErrorMsg(error?.message || 'Registration failed. Please try again.');
+        setErrorMsg(
+          error?.message ||
+            (lang === 'si'
+              ? 'ලියාපදිංචි වීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.'
+              : lang === 'ta'
+              ? 'பதிவு செய்ய முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'
+              : 'Registration failed. Please try again.')
+        );
       }
     } finally {
       setLoading(false);
@@ -143,15 +204,15 @@ export default function RegisterPage() {
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 bg-[#064e3b] text-white text-xs font-bold px-3.5 py-1 rounded-full shadow-xs">
           <Sprout className="w-4 h-4" />
-          <span>KethPiyasa B2B Registration</span>
+          <span>{t.registerBadge}</span>
         </div>
 
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-          Create Your Account
+          {t.registerHeaderTitle}
         </h1>
 
         <p className="text-xs text-slate-500">
-          Register your Farmer, Buyer, Logistics or Admin account.
+          {t.registerHeaderDesc}
         </p>
       </div>
 
@@ -176,14 +237,14 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* Role */}
+        {/* Role Selection (Only Farmer, Buyer, Logistics) */}
         <div className="space-y-2">
           <label className="text-slate-700 font-semibold block">
-            Primary Trading Role
+            {t.roleSelectLabel}
           </label>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {(['farmer', 'buyer', 'logistics', 'admin'] as UserRole[]).map(
+          <div className="grid grid-cols-3 gap-2">
+            {(['farmer', 'buyer', 'logistics'] as MainRole[]).map(
               (r) => (
                 <button
                   type="button"
@@ -195,7 +256,23 @@ export default function RegisterPage() {
                       : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
-                  {r}
+                  {r === 'farmer'
+                    ? lang === 'si'
+                      ? 'ගොවි'
+                      : lang === 'ta'
+                      ? 'விவசாயி'
+                      : 'Farmer'
+                    : r === 'buyer'
+                    ? lang === 'si'
+                      ? 'මිලදී ගන්නා'
+                      : lang === 'ta'
+                      ? 'கொள்முதல்'
+                      : 'Buyer'
+                    : lang === 'si'
+                    ? 'ප්‍රවාහන'
+                    : lang === 'ta'
+                    ? 'போக்குவரத்து'
+                    : 'Logistics'}
                 </button>
               )
             )}
@@ -205,7 +282,7 @@ export default function RegisterPage() {
         {/* Name */}
         <div>
           <label className="text-slate-700 font-semibold block mb-1">
-            Full Name / Enterprise Name
+            {t.fullNameLabel}
           </label>
 
           <div className="relative">
@@ -214,7 +291,7 @@ export default function RegisterPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Bandara Farms / Keells Agri Ltd"
+              placeholder={t.fullNamePlaceholder}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
               required
             />
@@ -224,7 +301,7 @@ export default function RegisterPage() {
         {/* Email */}
         <div>
           <label className="text-slate-700 font-semibold block mb-1">
-            Email Address
+            {t.emailLabel}
           </label>
 
           <div className="relative">
@@ -233,7 +310,7 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
+              placeholder={t.emailPlaceholder}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
               required
               autoComplete="email"
@@ -245,7 +322,7 @@ export default function RegisterPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-slate-700 font-semibold block mb-1">
-              Password
+              {t.passwordLabel}
             </label>
 
             <div className="relative">
@@ -254,7 +331,7 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimum 6 characters"
+                placeholder={t.passwordPlaceholder}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
                 required
                 minLength={6}
@@ -265,7 +342,7 @@ export default function RegisterPage() {
 
           <div>
             <label className="text-slate-700 font-semibold block mb-1">
-              Confirm Password
+              {t.confirmPasswordLabel}
             </label>
 
             <div className="relative">
@@ -274,7 +351,7 @@ export default function RegisterPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm password"
+                placeholder={t.confirmPasswordPlaceholder}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
                 required
                 minLength={6}
@@ -288,7 +365,7 @@ export default function RegisterPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-slate-700 font-semibold block mb-1">
-              NIC / Business Reg (BRN)
+              {t.nicBrnLabel}
             </label>
 
             <div className="relative">
@@ -306,7 +383,7 @@ export default function RegisterPage() {
 
           <div>
             <label className="text-slate-700 font-semibold block mb-1">
-              Mobile Phone
+              {t.phoneLabel}
             </label>
 
             <div className="relative">
@@ -326,7 +403,7 @@ export default function RegisterPage() {
         {/* District */}
         <div>
           <label className="text-slate-700 font-semibold block mb-1">
-            Farm / Enterprise District
+            {t.districtLabel}
           </label>
 
           <div className="relative">
@@ -336,33 +413,42 @@ export default function RegisterPage() {
               onChange={(e) => setDistrict(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
             >
-              <option value="Nuwara Eliya">Nuwara Eliya</option>
-              <option value="Dambulla">Dambulla</option>
-              <option value="Badulla">Badulla</option>
-              <option value="Polonnaruwa">Polonnaruwa</option>
-              <option value="Jaffna">Jaffna</option>
-              <option value="Monaragala">Monaragala</option>
-              <option value="Colombo">Colombo</option>
+              <option value="Nuwara Eliya">Nuwara Eliya (නුවරඑළිය / நுவரெலியா)</option>
+              <option value="Dambulla">Dambulla (දඹුල්ල / தம்புள்ளை)</option>
+              <option value="Badulla">Badulla (බදුල්ල / பதுளை)</option>
+              <option value="Polonnaruwa">Polonnaruwa (පොළොන්නරුව / பொலன்னறுவை)</option>
+              <option value="Jaffna">Jaffna (යාපනය / யாழ்ப்பாணம்)</option>
+              <option value="Monaragala">Monaragala (මොණරාගල / மொனராகலை)</option>
+              <option value="Colombo">Colombo (කොළඹ / கொழும்பு)</option>
             </select>
           </div>
         </div>
 
-        {/* Bank */}
+        {/* Bank (Optional) */}
         <div className="border-t border-slate-100 pt-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <Landmark className="w-4 h-4 text-[#064e3b]" />
-            <span className="font-bold text-slate-800">
-              Bank Settlement Account
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Landmark className="w-4 h-4 text-[#064e3b]" />
+              <span className="font-bold text-slate-800">
+                {t.bankSectionTitle}
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              {t.optionalBadge}
             </span>
           </div>
 
+          <p className="text-[11px] text-slate-500 leading-relaxed">
+            {t.bankSectionNote}
+          </p>
+
           <div>
-            <label className="text-slate-600 block mb-1">Bank Name</label>
+            <label className="text-slate-600 block mb-1">{t.bankNameLabel}</label>
             <input
               type="text"
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
-              placeholder="Commercial Bank of Ceylon"
+              placeholder="e.g. Commercial Bank of Ceylon"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
             />
           </div>
@@ -370,39 +456,30 @@ export default function RegisterPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-slate-600 block mb-1">
-                Account Number
+                {t.accountNumberLabel}
               </label>
               <input
                 type="text"
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder="8001928374"
+                placeholder="e.g. 8001928374"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
               />
             </div>
 
             <div>
               <label className="text-slate-600 block mb-1">
-                Branch Name
+                {t.branchNameLabel}
               </label>
               <input
                 type="text"
                 value={branchName}
                 onChange={(e) => setBranchName(e.target.value)}
-                placeholder="Main Branch"
+                placeholder="e.g. Nuwara Eliya Branch"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:border-[#064e3b]"
               />
             </div>
           </div>
-        </div>
-
-        {/* Verification notice */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-800">
-          <p className="font-semibold">Verification Notice</p>
-          <p className="mt-1 text-[11px] leading-relaxed">
-            Your account will be created with <strong>verified = false</strong>.
-            An authorized administrator can verify your NIC / BRN details later.
-          </p>
         </div>
 
         {/* Submit */}
@@ -416,11 +493,11 @@ export default function RegisterPage() {
           {loading ? (
             <>
               <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-              <span>Creating Account...</span>
+              <span>{t.registerBtn}...</span>
             </>
           ) : (
             <>
-              <span>Complete Registration</span>
+              <span>{t.registerBtn}</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
@@ -428,9 +505,9 @@ export default function RegisterPage() {
 
         {/* Login */}
         <div className="pt-2 text-center text-slate-500 text-[11px]">
-          Already have an account?{' '}
+          {t.alreadyRegistered}{' '}
           <Link href="/login" className="text-[#064e3b] font-bold underline">
-            Log in
+            {t.loginLink}
           </Link>
         </div>
       </form>
