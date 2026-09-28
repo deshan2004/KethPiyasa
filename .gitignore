@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+node_modules
+.next/
+.env.local
+.env
+.firebase/
+*.log
+firebase-debug.log*
+
+=======
 # dependencies
 /node_modules
 /.pnp
@@ -26,3 +36,4 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+>>>>>>> main
