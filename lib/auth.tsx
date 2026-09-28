@@ -15,21 +15,20 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-} from 'firebase/auth';
+} from '@firebase/auth';
 
 import {
   doc,
   getDoc,
   setDoc,
   serverTimestamp,
-} from 'firebase/firestore';
+} from '@firebase/firestore';
 
 import { auth, db } from './firebase';
 
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
-<<<<<<< HEAD
   login: (
     email: string,
     password: string,
@@ -40,14 +39,8 @@ interface AuthContextType {
     password: string,
     profileData: Omit<UserProfile, 'id' | 'verified'>
   ) => Promise<void>;
-  logout: () => Promise<void>;
-}
-
-=======
-  login: (emailOrPhone: string, role: UserRole) => void;
-  register: (profileData: Omit<UserProfile, 'id' | 'verified'>) => void;
   updateProfile: (updatedData: Partial<UserProfile>) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 export const defaultProfiles: Record<UserRole, UserProfile> = {
@@ -121,35 +114,18 @@ export const defaultProfiles: Record<UserRole, UserProfile> = {
   },
 };
 
->>>>>>> main
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const { setRole } = useApp();
-<<<<<<< HEAD
-=======
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const savedAuth = localStorage.getItem('kp_auth_user');
-        if (savedAuth) return JSON.parse(savedAuth);
-      } catch {
-        // ignore
-      }
-    }
-    return null;
-  });
->>>>>>> main
-
   const [user, setUser] = useState<UserProfile | null>(null);
 
   /*
    * Firebase authentication state listener
    */
   useEffect(() => {
-<<<<<<< HEAD
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
         setUser(null);
@@ -209,30 +185,11 @@ export const AuthProvider: React.FC<{
         `This account is registered as ${profile.role}, not ${selectedRole}.`
       );
     }
-=======
-    if (user?.role) {
-      setRole(user.role);
-    }
-  }, [user, setRole]);
-
-  const login = (emailOrPhone: string, selectedRole: UserRole) => {
-    const profile = defaultProfiles[selectedRole] || {
-      id: `usr-${Date.now()}`,
-      name: emailOrPhone.includes('@') ? emailOrPhone.split('@')[0] : 'Sri Lanka Registered User',
-      role: selectedRole,
-      nicOrBrn: '891029384V',
-      phone: emailOrPhone,
-      district: 'Colombo',
-      bankAccount: { bankName: 'Bank of Ceylon', accountNumber: '77281923', branchName: 'Main' },
-      verified: true,
-    };
->>>>>>> main
 
     setUser(profile);
     setRole(profile.role);
   };
 
-<<<<<<< HEAD
   /*
    * REGISTER
    */
@@ -265,46 +222,25 @@ export const AuthProvider: React.FC<{
     setRole(newProfile.role);
   };
 
+  const updateProfile = (updatedData: Partial<UserProfile>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...updatedData };
+      if (auth.currentUser) {
+        const userRef = doc(db, 'users', auth.currentUser.uid);
+        setDoc(userRef, updatedData, { merge: true }).catch((err) =>
+          console.error('Failed to update profile in Firestore:', err)
+        );
+      }
+      return updated;
+    });
+  };
+
   /*
    * LOGOUT
    */
   const logout = async () => {
     await signOut(auth);
-
-=======
-  const register = (profileData: Omit<UserProfile, 'id' | 'verified'>) => {
-    // Prevent registering as admin
-    const safeRole: UserRole = profileData.role === 'admin' ? 'farmer' : profileData.role;
-    
-    const newProfile: UserProfile = {
-      ...profileData,
-      role: safeRole,
-      id: `usr-${Date.now()}`,
-      verified: true,
-    };
-
-    setUser(newProfile);
-    setRole(safeRole);
-    try {
-      localStorage.setItem('kp_auth_user', JSON.stringify(newProfile));
-    } catch {
-      // ignore
-    }
-  };
-
-  const updateProfile = (updatedData: Partial<UserProfile>) => {
-    if (!user) return;
-    const updated = { ...user, ...updatedData };
-    setUser(updated);
-    try {
-      localStorage.setItem('kp_auth_user', JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
-  };
-
-  const logout = () => {
->>>>>>> main
     setUser(null);
   };
 
