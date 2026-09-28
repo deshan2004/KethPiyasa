@@ -713,7 +713,7 @@ export default function FarmerPage() {
                           { name: 'Leeks', url: '/leeks.jpg' },
                           { name: 'Carrots', url: '/carrot.jpg' },
                           { name: 'Paddy', url: '/samba.jpg' },
-                          { name: 'Tomatoes', url: '/chili.jpg' },
+                          { name: 'Tomatoes', url: '/tomato.jpeg' },
                           { name: 'Chili', url: '/chili.jpg' },
                           { name: 'Onion', url: '/onion.jpg' },
                           { name: 'Potato', url: '/carrot.jpg' },
