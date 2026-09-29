@@ -320,29 +320,33 @@ const initialUser: UserProfile = {
 
 const getLocalFallbackImage = (cropType?: string) => {
   const crop = (cropType || '').toLowerCase();
+  if (crop.includes('chili')) return '/chili.jpg';
+  if (crop.includes('tomato')) return '/tomato.jpeg';
   if (crop.includes('carrot')) return '/carrot.jpg';
   if (crop.includes('onion')) return '/onion.jpg';
-  if (crop.includes('chili') || crop.includes('tomato')) return '/tomato.jpeg';
   if (crop.includes('paddy') || crop.includes('samba')) return '/samba.jpg';
   if (crop.includes('leek')) return '/leeks.jpg';
   return '/leeks.jpg';
 };
 
 const normalizePhotoPath = (photo?: string, cropType?: string) => {
-  if (!photo) return getLocalFallbackImage(cropType);
+  const cropFallback = getLocalFallbackImage(cropType);
+
+  if (!photo) return cropFallback;
 
   const normalized = photo.trim();
-  if (!normalized) return getLocalFallbackImage(cropType);
+  if (!normalized) return cropFallback;
 
   if (normalized.includes('chill.jpg') || normalized.includes('chill')) return '/chili.jpg';
   if (normalized.includes('carrot.jpg')) return '/carrot.jpg';
   if (normalized.includes('samba.jpg')) return '/samba.jpg';
   if (normalized.includes('onion.jpg')) return '/onion.jpg';
   if (normalized.includes('leeks.jpg')) return '/leeks.jpg';
-  if (normalized.includes('chili.jpg') || normalized.includes('tomato.jpeg') || normalized.includes('tomato')) return '/tomato.jpeg';
+  if (normalized.includes('chili.jpg')) return '/chili.jpg';
+  if (normalized.includes('tomato.jpeg') || normalized.includes('tomato')) return cropFallback;
 
   if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
-    return getLocalFallbackImage(cropType);
+    return cropFallback;
   }
 
   return normalized;
