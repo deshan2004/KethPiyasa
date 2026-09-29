@@ -60,24 +60,24 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
 
   const selectedHub = hubs.find((h) => h.id === selectedHubId) || hubs[5];
 
-  // Tile layer URLs based on mapStyle mode
+  // Tile layer URLs based on mapStyle mode (100% Free, No API Key Required)
   const getTileUrlAndAttribution = (style: 'vector' | 'satellite' | 'routes') => {
     switch (style) {
       case 'satellite':
         return {
           url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          attribution: '&copy; Esri World Imagery &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+          attribution: '&copy; Esri World Imagery &mdash; Source: Esri, Maxar, Earthstar Geographics'
         };
       case 'routes':
         return {
-          url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         };
       case 'vector':
       default:
         return {
-          url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+          attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
         };
     }
   };
