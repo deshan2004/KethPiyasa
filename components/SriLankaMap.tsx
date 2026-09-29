@@ -72,7 +72,7 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
             <Compass className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">Sri Lanka Agri Grid & Logistics Map</h3>
               <span className="text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Live GPS Vector
@@ -328,22 +328,22 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
                 </span>
               </div>
 
-              <div className="space-y-2 text-xs">
+              <div className="space-y-3 text-xs">
                 <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
-                  <span className="text-slate-400 block text-[11px]">Primary Produce Crop:</span>
+                  <span className="text-slate-400 block text-[11px] uppercase tracking-wide">Primary Produce Crop</span>
                   <span className="font-bold text-white text-sm block">{selectedHub.produce}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Stock Volume</span>
+                    <span className="text-slate-400 text-[10px] block uppercase tracking-wide">Stock Volume</span>
                     <span className="font-extrabold text-emerald-400 text-xs">
                       {selectedHub.availableKg.toLocaleString()} Kg
                     </span>
                   </div>
 
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Avg Market Rate</span>
+                    <span className="text-slate-400 text-[10px] block uppercase tracking-wide">Avg Market Rate</span>
                     <span className="font-extrabold text-amber-400 text-xs">
                       {selectedHub.priceLkr > 0 ? `LKR ${selectedHub.priceLkr}/Kg` : 'Logistics Hub'}
                     </span>
@@ -365,6 +365,18 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
               </button>
             </div>
           )}
+
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs text-slate-300 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200">Map Legend</span>
+              <Info className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-full px-2 py-1"><span className="w-2 h-2 rounded-full bg-emerald-500 block" />Origin</span>
+              <span className="inline-flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-full px-2 py-1"><span className="w-2 h-2 rounded-full bg-sky-500 block" />Hub</span>
+              <span className="inline-flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-full px-2 py-1"><span className="w-2 h-2 rounded-full bg-amber-500 block" />Wholesale</span>
+            </div>
+          </div>
 
           {/* Active Logistics Route Status or Quick Stats */}
           {activeShipment ? (
