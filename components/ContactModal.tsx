@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Phone, MessageSquare, Send, X, ShieldCheck, User, Building2, CheckCircle2, Copy, Check } from 'lucide-react';
+import { Phone, MessageSquare, Send, X, ShieldCheck, Copy, Check, CheckCircle2 } from 'lucide-react';
+import { useApp } from '@/lib/store';
+import { getTranslation } from '@/lib/i18n';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -22,6 +24,9 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   district,
   produceTitle
 }) => {
+  const { lang } = useApp();
+  const t = getTranslation(lang);
+
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
@@ -49,6 +54,14 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     }, 1800);
   };
 
+  const getRoleTranslation = (role: string) => {
+    if (role.includes('Farmer')) return t.farmerRoleLabel;
+    if (role.includes('Buyer')) return t.buyerRoleLabel;
+    if (role.includes('Logistics') || role.includes('Driver')) return t.logisticsRoleLabel;
+    if (role.includes('Admin')) return t.adminRoleLabel;
+    return role;
+  };
+
   return (
     <div className="fixed inset-0 z-[9999] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -59,8 +72,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               <Phone className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm text-white">Direct Contact & Telephony</h3>
-              <p className="text-[11px] text-emerald-200">Instant direct phone call & SMS message</p>
+              <h3 className="font-extrabold text-sm text-white">{t.contactTitle}</h3>
+              <p className="text-[11px] text-emerald-200">{t.contactSubtitle}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-emerald-200 hover:text-white p-1 rounded-lg cursor-pointer">
@@ -73,8 +86,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
           {sentSuccess ? (
             <div className="py-8 text-center space-y-2">
               <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto animate-bounce" />
-              <h4 className="font-extrabold text-slate-900 text-base">Direct SMS Message Sent!</h4>
-              <p className="text-slate-500">Your message has been dispatched to {contactName}.</p>
+              <h4 className="font-extrabold text-slate-900 text-base">{t.smsSent}</h4>
+              <p className="text-slate-500">{t.smsSentSub} ({contactName})</p>
             </div>
           ) : (
             <>
@@ -84,7 +97,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                   <div>
                     <h4 className="font-extrabold text-slate-900 text-sm">{contactName}</h4>
                     <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> {contactRole}
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> {getRoleTranslation(contactRole)}
                     </span>
                   </div>
                   {district && (
@@ -96,7 +109,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
                 {produceTitle && (
                   <p className="text-slate-600 font-medium text-[11px] border-t border-slate-200 pt-1.5 mt-1">
-                    Regarding: <span className="font-bold text-slate-900">{produceTitle}</span>
+                    {t.regarding}: <span className="font-bold text-slate-900">{produceTitle}</span>
                   </p>
                 )}
               </div>
@@ -109,7 +122,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                   className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold p-3 rounded-xl flex items-center justify-center gap-2 text-xs shadow-2xs transition-all cursor-pointer"
                 >
                   <Phone className="w-4 h-4" />
-                  <span>Call Direct</span>
+                  <span>{t.directCall}</span>
                 </a>
 
                 {/* WhatsApp Direct Link */}
@@ -120,7 +133,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3 rounded-xl flex items-center justify-center gap-2 text-xs shadow-2xs transition-all cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  <span>WhatsApp Chat</span>
+                  <span>{t.whatsappChat}</span>
                 </a>
               </div>
 
@@ -133,18 +146,18 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                   className="text-slate-600 hover:text-slate-900 font-semibold text-[11px] flex items-center gap-1 cursor-pointer bg-white px-2 py-1 rounded border border-slate-200"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copied ? 'Copied!' : 'Copy'}</span>
+                  <span>{copied ? t.phoneCopied : t.copyPhone}</span>
                 </button>
               </div>
 
               {/* Send Quick In-App SMS */}
               <form onSubmit={handleSendMessage} className="space-y-2 pt-1 border-t border-slate-100">
-                <label className="font-semibold text-slate-700 block">Send Direct In-App SMS</label>
+                <label className="font-semibold text-slate-700 block">{t.sendInAppSms}</label>
                 <textarea
                   rows={2}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="e.g. Hello, I am inquiring about produce loading timing..."
+                  placeholder={t.smsPlaceholder}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-medium focus:outline-none focus:border-[#064e3b]"
                   required
                 ></textarea>
@@ -155,13 +168,13 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                     onClick={onClose}
                     className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 font-semibold cursor-pointer"
                   >
-                    Close
+                    {t.close}
                   </button>
                   <button
                     type="submit"
                     className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-4 py-1.5 rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Send className="w-3.5 h-3.5" /> Send Message
+                    <Send className="w-3.5 h-3.5" /> {t.sendMessage}
                   </button>
                 </div>
               </form>
