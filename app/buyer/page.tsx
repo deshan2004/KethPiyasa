@@ -10,6 +10,7 @@ import { SriLankaMap } from '@/components/SriLankaMap';
 import { InvoiceModal } from '@/components/InvoiceModal';
 import { ProfileVerificationModal } from '@/components/ProfileVerificationModal';
 import { QRScannerModal } from '@/components/QRScannerModal';
+import { ContactModal } from '@/components/ContactModal';
 import {
   ShoppingBag,
   Search,
@@ -44,7 +45,8 @@ import {
   CheckCircle,
   FileCheck,
   Map,
-  Globe
+  Globe,
+  Phone
 } from 'lucide-react';
 
 export default function BuyerPage() {
@@ -101,6 +103,21 @@ export default function BuyerPage() {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [qrScanShipment, setQrScanShipment] = useState<ShipmentJob | null>(null);
 
+  // Contact Modal State
+  const [contactTarget, setContactTarget] = useState<{
+    isOpen: boolean;
+    name: string;
+    role: 'Farmer Producer' | 'Commercial Buyer' | 'Logistics Driver';
+    phone: string;
+    district?: string;
+    produceTitle?: string;
+  }>({
+    isOpen: false,
+    name: '',
+    role: 'Farmer Producer',
+    phone: '',
+  });
+
   if (!user) {
     return (
       <div className="max-w-xl mx-auto my-12 bg-white border border-slate-200 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-sm">
@@ -147,6 +164,17 @@ export default function BuyerPage() {
     setBiddingModalListing(item);
     setTargetQty(item.minOrderQtyKg || 500);
     setOfferedPrice(item.pricePerKg);
+  };
+
+  const handleOpenContactFarmer = (item: ProduceListing) => {
+    setContactTarget({
+      isOpen: true,
+      name: item.farmerName,
+      role: 'Farmer Producer',
+      phone: item.farmerPhone || '+94 77 123 4567',
+      district: item.locationDistrict,
+      produceTitle: item.title,
+    });
   };
 
   const handleSendQuoteSubmit = (e: React.FormEvent) => {
@@ -379,7 +407,7 @@ export default function BuyerPage() {
           </div>
         </div>
 
-        {/* TAB 1: PROCUREMENT CATALOG (Full Width Cards Layout) */}
+        {/* TAB 1: PROCUREMENT CATALOG */}
         {activeTab === 'procurement' && (
           <div className="space-y-6">
             {/* National Economic Center Daily Baseline Market Prices Banner */}
@@ -493,7 +521,15 @@ export default function BuyerPage() {
                   <div className="p-4 space-y-3 flex-1 flex flex-col justify-between text-xs">
                     <div className="space-y-1.5">
                       <h3 className="font-extrabold text-slate-900 text-sm leading-snug">{item.title}</h3>
-                      <p className="text-slate-500 text-[11px] font-medium">{item.farmerName} • {item.locationDistrict}</p>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-500 font-medium">{item.farmerName} • {item.locationDistrict}</span>
+                        <button
+                          onClick={() => handleOpenContactFarmer(item)}
+                          className="text-[#064e3b] hover:text-[#043e2f] font-bold flex items-center gap-1 text-[10px] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 cursor-pointer"
+                        >
+                          <Phone className="w-3 h-3" /> Contact Farmer
+                        </button>
+                      </div>
                       <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
                         <span className="text-slate-600 font-semibold">Ready Date: <span className="font-mono text-slate-900">{item.harvestDate}</span></span>
                         <span className="text-slate-600 font-bold bg-slate-100 px-2 py-0.5 rounded">{item.quantityKg.toLocaleString()} kg</span>
@@ -599,7 +635,21 @@ export default function BuyerPage() {
                         <span className="text-[10px] text-slate-400">• {offer.createdAt}</span>
                       </div>
                       <h3 className="font-extrabold text-slate-900 text-base">{offer.produceTitle}</h3>
-                      <p className="text-slate-600 font-medium mt-0.5">Seller: <span className="font-bold text-slate-900">{offer.farmerName}</span></p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-slate-600 font-medium">Seller: <span className="font-bold text-slate-900">{offer.farmerName}</span></p>
+                        <button
+                          onClick={() => setContactTarget({
+                            isOpen: true,
+                            name: offer.farmerName,
+                            role: 'Farmer Producer',
+                            phone: offer.buyerPhone || '+94 77 123 4567',
+                            produceTitle: offer.produceTitle,
+                          })}
+                          className="text-[#064e3b] font-bold flex items-center gap-1 text-[10px] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 cursor-pointer"
+                        >
+                          <Phone className="w-3 h-3" /> Contact Farmer
+                        </button>
+                      </div>
                     </div>
 
                     <span className={`font-bold px-3 py-1 rounded-full text-[11px] uppercase tracking-wider ${
@@ -732,12 +782,25 @@ export default function BuyerPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setInvoiceModalContract(ctr)}
                       className="flex-1 bg-[#064e3b] text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                     >
                       <FileText className="w-4 h-4" /> Download Tax Invoice
+                    </button>
+
+                    <button
+                      onClick={() => setContactTarget({
+                        isOpen: true,
+                        name: ctr.farmerName,
+                        role: 'Farmer Producer',
+                        phone: '+94 77 123 4567',
+                        produceTitle: ctr.produceTitle,
+                      })}
+                      className="bg-emerald-50 hover:bg-emerald-100 text-[#064e3b] border border-emerald-300 font-bold px-3 py-2.5 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      <Phone className="w-3.5 h-3.5" /> Call Farmer
                     </button>
 
                     <button
@@ -778,7 +841,21 @@ export default function BuyerPage() {
                       </div>
                       <h4 className="font-bold text-slate-900 text-sm">{ship.produceTitle}</h4>
                       <p className="text-slate-600">Hauler: <span className="font-bold text-slate-900">{ship.haulerName}</span> ({ship.haulerVehicle})</p>
-                      <p className="text-slate-500 font-mono text-[11px]">Driver: {ship.driverName} • {ship.driverPhone}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-slate-500 font-mono text-[11px]">Driver: {ship.driverName} • {ship.driverPhone}</p>
+                        <button
+                          onClick={() => setContactTarget({
+                            isOpen: true,
+                            name: ship.driverName,
+                            role: 'Logistics Driver',
+                            phone: ship.driverPhone || '+94 71 444 5566',
+                            produceTitle: ship.produceTitle,
+                          })}
+                          className="text-blue-700 hover:text-blue-900 font-bold text-[10px] bg-blue-50 px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1 cursor-pointer"
+                        >
+                          <Phone className="w-3 h-3" /> Call Driver
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-1 text-right">
@@ -1078,6 +1155,17 @@ export default function BuyerPage() {
           onClose={() => setQrScanShipment(null)}
         />
       )}
+
+      {/* MODAL 7: DIRECT CONTACT & TELEPHONY MODAL */}
+      <ContactModal
+        isOpen={contactTarget.isOpen}
+        onClose={() => setContactTarget((prev) => ({ ...prev, isOpen: false }))}
+        contactName={contactTarget.name}
+        contactRole={contactTarget.role}
+        phone={contactTarget.phone}
+        district={contactTarget.district}
+        produceTitle={contactTarget.produceTitle}
+      />
     </div>
   );
 }

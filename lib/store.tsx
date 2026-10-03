@@ -410,6 +410,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [disputes, setDisputes] = useState<DisputeTicket[]>(initialDisputes);
   const [currentUser] = useState<UserProfile>(initialUser);
 
+  // Cross-tab real-time sync for localStorage changes
+  React.useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (!e.key) return;
+      try {
+        if (e.key === 'kp_listings' && e.newValue) {
+          const parsed = JSON.parse(e.newValue);
+          setListings(sanitizeSavedListings(parsed));
+        }
+        if (e.key === 'kp_offers' && e.newValue) {
+          setOffers(JSON.parse(e.newValue));
+        }
+        if (e.key === 'kp_contracts' && e.newValue) {
+          setContracts(JSON.parse(e.newValue));
+        }
+        if (e.key === 'kp_shipments' && e.newValue) {
+          setShipments(JSON.parse(e.newValue));
+        }
+      } catch (err) {
+        console.error('Failed to sync storage:', err);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const saveState = (key: string, data: unknown) => {
     try {
       localStorage.setItem(key, JSON.stringify(data));

@@ -9,6 +9,7 @@ import { ShipmentJob } from '@/lib/types';
 import { SriLankaMap } from '@/components/SriLankaMap';
 import { QRScannerModal } from '@/components/QRScannerModal';
 import { ProfileVerificationModal } from '@/components/ProfileVerificationModal';
+import { ContactModal } from '@/components/ContactModal';
 import {
   Truck,
   MapPin,
@@ -41,6 +42,21 @@ export default function LogisticsPage() {
   const [selectedShipmentId, setSelectedShipmentId] = useState<string>(shipments[0]?.id || 'ship-901');
   const [selectedQrShipment, setSelectedQrShipment] = useState<ShipmentJob | null>(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+
+  // Contact Modal State
+  const [contactTarget, setContactTarget] = useState<{
+    isOpen: boolean;
+    name: string;
+    role: 'Farmer Producer' | 'Commercial Buyer' | 'Logistics Driver';
+    phone: string;
+    district?: string;
+    produceTitle?: string;
+  }>({
+    isOpen: false,
+    name: '',
+    role: 'Farmer Producer',
+    phone: '',
+  });
 
   if (!user) {
     return (
@@ -230,25 +246,72 @@ export default function LogisticsPage() {
             <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 shadow-2xs text-xs">
               <h3 className="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">Haulier & Driver Profile</h3>
 
-              <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <div className="w-10 h-10 rounded-xl bg-[#064e3b] text-white flex items-center justify-center font-black text-lg shadow-2xs">
-                  🚚
+              <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#064e3b] text-white flex items-center justify-center font-black text-lg shadow-2xs">
+                    🚚
+                  </div>
+                  <div>
+                    <span className="font-extrabold text-slate-900 block">{activeShipment.driverName} (Driver)</span>
+                    <span className="text-slate-500 font-medium">Vehicle: {activeShipment.haulerVehicle}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-extrabold text-slate-900 block">{activeShipment.driverName} (Driver)</span>
-                  <span className="text-slate-500 font-medium">Vehicle: {activeShipment.haulerVehicle}</span>
-                </div>
+
+                <button
+                  onClick={() => setContactTarget({
+                    isOpen: true,
+                    name: activeShipment.driverName,
+                    role: 'Logistics Driver',
+                    phone: activeShipment.driverPhone || '+94 71 444 5566',
+                    produceTitle: activeShipment.produceTitle,
+                  })}
+                  className="bg-[#064e3b] text-white font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer"
+                >
+                  <Phone className="w-3 h-3" /> Call
+                </button>
               </div>
 
               <div className="space-y-2 text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500">Origin Loading:</span>
-                  <span className="font-bold text-slate-900">{activeShipment.originHub}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-slate-900">{activeShipment.originHub}</span>
+                    <button
+                      onClick={() => setContactTarget({
+                        isOpen: true,
+                        name: 'Farmer Seller Hub',
+                        role: 'Farmer Producer',
+                        phone: '+94 77 123 4567',
+                        district: activeShipment.originDistrict,
+                        produceTitle: activeShipment.produceTitle,
+                      })}
+                      className="text-[#064e3b] font-bold text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 cursor-pointer"
+                    >
+                      Call Seller
+                    </button>
+                  </div>
                 </div>
-                <div className="flex justify-between">
+
+                <div className="flex justify-between items-center">
                   <span className="text-slate-400">Destination Drop:</span>
-                  <span className="font-bold text-slate-900">{activeShipment.destinationHub}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-slate-900">{activeShipment.destinationHub}</span>
+                    <button
+                      onClick={() => setContactTarget({
+                        isOpen: true,
+                        name: 'Buyer Warehouse Manager',
+                        role: 'Commercial Buyer',
+                        phone: '+94 11 234 5678',
+                        district: activeShipment.destinationDistrict,
+                        produceTitle: activeShipment.produceTitle,
+                      })}
+                      className="text-blue-700 font-bold text-[10px] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 cursor-pointer"
+                    >
+                      Call Buyer
+                    </button>
+                  </div>
                 </div>
+
                 <div className="flex justify-between">
                   <span className="text-slate-400">Cargo Weight:</span>
                   <span className="font-bold text-[#064e3b]">{activeShipment.weightKg.toLocaleString()} Kg</span>
@@ -348,6 +411,17 @@ export default function LogisticsPage() {
           onClose={() => setSelectedQrShipment(null)}
         />
       )}
+
+      {/* DIRECT CONTACT MODAL */}
+      <ContactModal
+        isOpen={contactTarget.isOpen}
+        onClose={() => setContactTarget((prev) => ({ ...prev, isOpen: false }))}
+        contactName={contactTarget.name}
+        contactRole={contactTarget.role}
+        phone={contactTarget.phone}
+        district={contactTarget.district}
+        produceTitle={contactTarget.produceTitle}
+      />
     </div>
   );
 }
