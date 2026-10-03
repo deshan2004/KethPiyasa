@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/auth';
+import { useApp } from '@/lib/store';
+import { getTranslation } from '@/lib/i18n';
 import { 
   X, 
   ShieldCheck, 
   CheckCircle2, 
   Building2, 
-  CreditCard, 
   User, 
   MapPin, 
   Phone, 
@@ -24,6 +25,8 @@ interface ProfileVerificationModalProps {
 
 export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> = ({ isOpen, onClose }) => {
   const { user, updateProfile } = useAuth();
+  const { lang } = useApp();
+  const t = getTranslation(lang);
 
   const [bankName, setBankName] = useState(user?.bankAccount?.bankName || '');
   const [accountNumber, setAccountNumber] = useState(user?.bankAccount?.accountNumber || '');
@@ -48,7 +51,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
       },
       bankVerified: true,
     });
-    setSuccessMsg('Bank Settlement Account successfully updated & verified!');
+    setSuccessMsg(t.saveBankBtn);
     setTimeout(() => setSuccessMsg(''), 3500);
   };
 
@@ -60,7 +63,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
         nicVerified: true,
       });
       setIsVerifyingNic(false);
-      setSuccessMsg('National Identity (NIC/BRN) successfully re-verified with Agrarian Registry!');
+      setSuccessMsg(t.nicVerifiedStatus);
       setTimeout(() => setSuccessMsg(''), 3500);
     }, 600);
   };
@@ -80,7 +83,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               </h3>
               <p className="text-[11px] text-emerald-200 font-medium">
-                Identity & Bank Verification Profile • <span className="uppercase font-bold">{user.role}</span>
+                {t.profileVerificationTitle} • <span className="uppercase font-bold">{user.role}</span>
               </p>
             </div>
           </div>
@@ -106,7 +109,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-slate-400" />
               <div>
-                <span className="text-[10px] text-slate-400 block font-semibold">Account Role</span>
+                <span className="text-[10px] text-slate-400 block font-semibold">{t.accountRole}</span>
                 <span className="font-extrabold text-slate-900 uppercase text-xs">{user.role}</span>
               </div>
             </div>
@@ -114,7 +117,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-slate-400" />
               <div>
-                <span className="text-[10px] text-slate-400 block font-semibold">Registered Contact</span>
+                <span className="text-[10px] text-slate-400 block font-semibold">{t.registeredContact}</span>
                 <span className="font-bold text-slate-900 text-xs">{user.phone}</span>
               </div>
             </div>
@@ -122,7 +125,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-slate-400" />
               <div>
-                <span className="text-[10px] text-slate-400 block font-semibold">District Location</span>
+                <span className="text-[10px] text-slate-400 block font-semibold">{t.districtLocation}</span>
                 <span className="font-bold text-slate-900 text-xs">{user.district}</span>
               </div>
             </div>
@@ -130,9 +133,9 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
             <div className="flex items-center gap-2">
               <Award className="w-4 h-4 text-slate-400" />
               <div>
-                <span className="text-[10px] text-slate-400 block font-semibold">Account Trust Status</span>
+                <span className="text-[10px] text-slate-400 block font-semibold">{t.trustStatus}</span>
                 <span className="font-bold text-emerald-700 text-xs flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified Member
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" /> {t.verifiedMember}
                 </span>
               </div>
             </div>
@@ -143,18 +146,18 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileCheck className="w-4 h-4 text-[#064e3b]" />
-                <h4 className="font-extrabold text-slate-900 text-xs">National Identity (NIC / BRN)</h4>
+                <h4 className="font-extrabold text-slate-900 text-xs">{t.nicBrnTitle}</h4>
               </div>
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold flex items-center gap-1 ${
                 isNicVerified ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800'
               }`}>
                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                {isNicVerified ? 'NIC Verified' : 'Pending Verification'}
+                {isNicVerified ? t.nicVerifiedStatus : t.pendingVerificationStatus}
               </span>
             </div>
 
             <div className="space-y-2">
-              <label className="text-slate-600 block text-[11px] font-semibold">NIC or Business Registration (BRN) Key</label>
+              <label className="text-slate-600 block text-[11px] font-semibold">{t.nicBrnLabel}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -169,12 +172,9 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
                   disabled={isVerifyingNic}
                   className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1 cursor-pointer"
                 >
-                  {isVerifyingNic ? 'Verifying...' : 'Verify Key'}
+                  {isVerifyingNic ? t.verifyingNicText : t.verifyKeyBtn}
                 </button>
               </div>
-              <p className="text-[10px] text-slate-400">
-                Verified with Sri Lanka Ministry of Agrarian Development & Corporate Registry.
-              </p>
             </div>
           </div>
 
@@ -183,7 +183,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-[#064e3b]" />
-                <h4 className="font-extrabold text-slate-900 text-xs">Bank Settlement Account</h4>
+                <h4 className="font-extrabold text-slate-900 text-xs">{t.bankAccountTitle}</h4>
               </div>
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold flex items-center gap-1 ${
                 isBankVerified ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'
@@ -191,12 +191,12 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
                 {isBankVerified ? (
                   <>
                     <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                    <span>Bank Details Verified</span>
+                    <span>{t.bankVerifiedStatus}</span>
                   </>
                 ) : (
                   <>
                     <AlertCircle className="w-3 h-3 text-amber-600" />
-                    <span>Pending Bank Details</span>
+                    <span>{t.pendingBankStatus}</span>
                   </>
                 )}
               </span>
@@ -204,14 +204,14 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
 
             <div className="space-y-3 pt-1">
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Bank Name</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.bankNameLabel}</label>
                 <select
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-xs text-slate-900 focus:outline-none focus:border-[#064e3b]"
                   required
                 >
-                  <option value="">-- Select Registered Bank --</option>
+                  <option value="">{t.selectBankOption}</option>
                   <option value="Commercial Bank of Ceylon">Commercial Bank of Ceylon</option>
                   <option value="Hatton National Bank">Hatton National Bank (HNB)</option>
                   <option value="Sampath Bank PLC">Sampath Bank PLC</option>
@@ -226,7 +226,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-700 font-semibold block mb-1">Account Number</label>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.accountNumberLabel}</label>
                   <input
                     type="text"
                     value={accountNumber}
@@ -238,7 +238,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
                 </div>
 
                 <div>
-                  <label className="text-slate-700 font-semibold block mb-1">Branch Name</label>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.branchNameLabel}</label>
                   <input
                     type="text"
                     value={branchName}
@@ -256,7 +256,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
               className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-extrabold py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-xs cursor-pointer active:scale-98"
             >
               <Check className="w-4 h-4" />
-              <span>Save & Verify Bank Details</span>
+              <span>{t.saveBankBtn}</span>
             </button>
           </form>
         </div>
@@ -267,7 +267,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
             onClick={onClose}
             className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-2 rounded-xl text-xs transition-colors cursor-pointer"
           >
-            Close Profile Window
+            {t.closeProfileBtn}
           </button>
         </div>
       </div>
