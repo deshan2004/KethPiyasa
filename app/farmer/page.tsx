@@ -8,6 +8,7 @@ import { getTranslation } from '@/lib/i18n';
 import { ProduceListing, QualityGrade, NegotiationOffer, ShipmentJob, DisputeTicket } from '@/lib/types';
 import { InvoiceModal } from '@/components/InvoiceModal';
 import { ProfileVerificationModal } from '@/components/ProfileVerificationModal';
+import { ContactModal } from '@/components/ContactModal';
 import {
   Sprout,
   PlusCircle,
@@ -47,7 +48,8 @@ import {
   Filter,
   Tag,
   Store,
-  FileCheck
+  FileCheck,
+  Phone
 } from 'lucide-react';
 
 export default function FarmerPage() {
@@ -87,6 +89,21 @@ export default function FarmerPage() {
   // Pickup QR Code Pass Modal State
   const [selectedPickupShipment, setSelectedPickupShipment] = useState<ShipmentJob | null>(null);
 
+  // Contact Modal State
+  const [contactTarget, setContactTarget] = useState<{
+    isOpen: boolean;
+    name: string;
+    role: 'Farmer Producer' | 'Commercial Buyer' | 'Logistics Driver';
+    phone: string;
+    district?: string;
+    produceTitle?: string;
+  }>({
+    isOpen: false,
+    name: '',
+    role: 'Commercial Buyer',
+    phone: '',
+  });
+
   // Inventory Filter State
   const [inventoryFilter, setInventoryFilter] = useState<'all' | 'ready' | 'preharvest'>('all');
 
@@ -116,9 +133,9 @@ export default function FarmerPage() {
           <Sprout className="w-8 h-8" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Farmer Portal Authentication Required</h2>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t.roleFarmer}</h2>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
-            You must be logged in with a verified Farmer Producer account to access crop inventory, buyer quotes, forward harvest contracts, and bank escrow payouts.
+            {t.farmerSubtitle}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -126,13 +143,13 @@ export default function FarmerPage() {
             href="/login?role=farmer"
             className="w-full sm:w-auto bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs px-6 py-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5"
           >
-            <LogIn className="w-4 h-4" /> Login as Farmer
+            <LogIn className="w-4 h-4" /> {t.loginBtn}
           </Link>
           <Link
             href="/register"
             className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-6 py-3 rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1.5"
           >
-            <UserPlus className="w-4 h-4" /> Register New Account
+            <UserPlus className="w-4 h-4" /> {t.registerLink}
           </Link>
         </div>
       </div>
@@ -251,7 +268,7 @@ export default function FarmerPage() {
 
           <button
             onClick={() => setShowVerificationModal(true)}
-            className="w-full bg-slate-50 hover:bg-emerald-50 text-[#064e3b] border border-slate-200 hover:border-emerald-300 text-[10px] font-bold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-between"
+            className="w-full bg-slate-50 hover:bg-emerald-50 text-[#064e3b] border border-slate-200 hover:border-emerald-300 text-[10px] font-bold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-between cursor-pointer"
           >
             <span className="flex items-center gap-1">
               <Building2 className="w-3 h-3 text-emerald-600" /> Bank & NIC Verification
@@ -269,7 +286,7 @@ export default function FarmerPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <LayoutDashboard className="w-4 h-4" /> Dashboard Overview
+              <LayoutDashboard className="w-4 h-4" /> {t.farmerTitle.split(' ')[0]} Overview
             </span>
           </button>
 
@@ -280,7 +297,7 @@ export default function FarmerPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" /> B2B Offers & Quotes
+              <MessageSquare className="w-4 h-4" /> {t.offersInboxTab}
             </span>
             {pendingBidsCount > 0 && (
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === 'inbox' ? 'bg-amber-400 text-slate-900' : 'bg-amber-100 text-amber-800'}`}>
@@ -296,7 +313,7 @@ export default function FarmerPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <Boxes className="w-4 h-4" /> Stock & Pre-Harvest ({listings.length})
+              <Boxes className="w-4 h-4" /> {t.listingsTab} ({listings.length})
             </span>
           </button>
 
@@ -307,7 +324,7 @@ export default function FarmerPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <Truck className="w-4 h-4" /> Pickup Dispatch ({shipments.length})
+              <Truck className="w-4 h-4" /> {t.navLogistics} ({shipments.length})
             </span>
           </button>
 
@@ -318,7 +335,7 @@ export default function FarmerPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4" /> Bank Escrow Payouts
+              <CreditCard className="w-4 h-4" /> {t.bankPayoutsTab}
             </span>
           </button>
 
@@ -329,7 +346,7 @@ export default function FarmerPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" /> Disputes & Claims ({disputes.length})
+              <AlertTriangle className="w-4 h-4 text-amber-500" /> {t.disputesTab} ({disputes.length})
             </span>
           </button>
         </nav>
@@ -340,7 +357,7 @@ export default function FarmerPage() {
             onClick={() => setShowCreateModal(true)}
             className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs py-3 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4" /> Post Crop Listing
+            <PlusCircle className="w-4 h-4" /> {t.createNewListing}
           </button>
         </div>
       </aside>
@@ -351,20 +368,15 @@ export default function FarmerPage() {
         <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-              {activeTab === 'dashboard' && '🌾 Farmer Produce & Trading Dashboard'}
-              {activeTab === 'inbox' && '🤝 Commercial Buyer Bids & Negotiation Quotes'}
-              {activeTab === 'listings' && '📦 Crop Stock & Pre-Harvest Inventory'}
-              {activeTab === 'logistics' && '🚚 Farm-Gate Pickup & Haulage Verification'}
-              {activeTab === 'payouts' && '🏦 Direct Bank Settlements & Escrow Holding'}
-              {activeTab === 'disputes' && '🛡️ Quality Dispute Tickets & Support'}
+              {activeTab === 'dashboard' && `🌾 ${t.farmerTitle}`}
+              {activeTab === 'inbox' && `🤝 ${t.offersInboxTab}`}
+              {activeTab === 'listings' && `📦 ${t.listingsTab}`}
+              {activeTab === 'logistics' && `🚚 ${t.navLogistics}`}
+              {activeTab === 'payouts' && `🏦 ${t.bankPayoutsTab}`}
+              {activeTab === 'disputes' && `🛡️ ${t.disputesTab}`}
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              {activeTab === 'dashboard' && 'Direct B2B sales overview, price benchmarks, and harvest schedules'}
-              {activeTab === 'inbox' && 'Review buyer offers, accept agreements, or submit counter-offers'}
-              {activeTab === 'listings' && 'Manage ready crop stock and pre-harvest forward contracts'}
-              {activeTab === 'logistics' && 'Track transport haulers and present pickup QR codes for verification'}
-              {activeTab === 'payouts' && 'Monitor verified escrow releases directly to your bank account'}
-              {activeTab === 'disputes' && 'Manage buyer quality claims and view admin dispute resolutions'}
+              {t.farmerSubtitle}
             </p>
           </div>
 
@@ -373,7 +385,7 @@ export default function FarmerPage() {
               onClick={() => setShowCreateModal(true)}
               className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4" /> Add Listing
+              <PlusCircle className="w-4 h-4" /> {t.createNewListing}
             </button>
           </div>
         </div>
@@ -384,7 +396,7 @@ export default function FarmerPage() {
             {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
-                <span className="text-xs text-slate-500 font-medium block">Total Finalized Sales</span>
+                <span className="text-xs text-slate-500 font-medium block">{t.totalRevenue}</span>
                 <div className="text-2xl font-black text-[#064e3b]">LKR {totalCompletedValue.toLocaleString()}</div>
                 <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" /> Escrow payout guaranteed
@@ -392,13 +404,13 @@ export default function FarmerPage() {
               </div>
 
               <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
-                <span className="text-xs text-slate-500 font-medium block">Pending Bids & Quotes</span>
+                <span className="text-xs text-slate-500 font-medium block">{t.activeBids}</span>
                 <div className="text-2xl font-black text-amber-600">{pendingBidsCount}</div>
                 <span className="text-[11px] text-amber-600 font-semibold">Active buyer negotiations</span>
               </div>
 
               <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-2xs">
-                <span className="text-xs text-slate-500 font-medium block">Pre-Harvest Advance Stock</span>
+                <span className="text-xs text-slate-500 font-medium block">{t.upcomingHarvest}</span>
                 <div className="text-2xl font-black text-slate-900">{totalUpcomingYield.toLocaleString()} kg</div>
                 <span className="text-[11px] text-slate-500">Forward contracted harvest</span>
               </div>
@@ -416,7 +428,7 @@ export default function FarmerPage() {
                 <div className="flex items-center gap-2">
                   <Store className="w-5 h-5 text-emerald-400" />
                   <div>
-                    <h3 className="font-extrabold text-sm text-white">National Economic Center Live Baseline Prices</h3>
+                    <h3 className="font-extrabold text-sm text-white">{t.livePrices}</h3>
                     <p className="text-[11px] text-slate-400">Official daily wholesale price benchmarks from Dambulla, Pettah & Nuwara Eliya</p>
                   </div>
                 </div>
@@ -426,21 +438,24 @@ export default function FarmerPage() {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {marketPrices.slice(0, 4).map((mp) => (
-                  <div key={mp.id} className="bg-slate-800/80 border border-slate-700/70 p-3.5 rounded-xl space-y-1">
-                    <div className="flex justify-between items-start">
-                      <span className="font-bold text-xs text-slate-100">{mp.cropName}</span>
-                      <span className="text-[9px] text-slate-400 font-medium bg-slate-700/60 px-1.5 py-0.5 rounded">{mp.centerName}</span>
+                {marketPrices.slice(0, 4).map((mp) => {
+                  const cropNameTranslated = lang === 'si' ? mp.cropNameSi : lang === 'ta' ? mp.cropNameTa : mp.cropName;
+                  return (
+                    <div key={mp.id} className="bg-slate-800/80 border border-slate-700/70 p-3.5 rounded-xl space-y-1">
+                      <div className="flex justify-between items-start">
+                        <span className="font-bold text-xs text-slate-100">{cropNameTranslated}</span>
+                        <span className="text-[9px] text-slate-400 font-medium bg-slate-700/60 px-1.5 py-0.5 rounded">{mp.centerName}</span>
+                      </div>
+                      <div className="text-lg font-black text-emerald-400">LKR {mp.avgPriceLkr} <span className="text-[10px] font-normal text-slate-300">{t.perKg}</span></div>
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Range: {mp.minPriceLkr}-{mp.maxPriceLkr}</span>
+                        <span className={`font-bold flex items-center ${mp.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {mp.change24h >= 0 ? '+' : ''}{mp.change24h}%
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-lg font-black text-emerald-400">LKR {mp.avgPriceLkr} <span className="text-[10px] font-normal text-slate-300">/{mp.unit}</span></div>
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-slate-400">Range: {mp.minPriceLkr}-{mp.maxPriceLkr}</span>
-                      <span className={`font-bold flex items-center ${mp.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        {mp.change24h >= 0 ? '+' : ''}{mp.change24h}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -450,13 +465,13 @@ export default function FarmerPage() {
               <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <Boxes className="w-4 h-4 text-[#064e3b]" /> Active Crop Stock Overview
+                    <Boxes className="w-4 h-4 text-[#064e3b]" /> {t.listingsTab}
                   </h3>
                   <button
                     onClick={() => setActiveTab('listings')}
                     className="text-xs text-[#064e3b] font-bold hover:underline flex items-center gap-1"
                   >
-                    View Full Catalog <ArrowRight className="w-3 h-3" />
+                    View All Listings <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
 
@@ -464,11 +479,11 @@ export default function FarmerPage() {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 uppercase font-semibold text-[10px]">
-                        <th className="p-3">Crop Variety</th>
-                        <th className="p-3">Grade</th>
-                        <th className="p-3">Available Qty</th>
-                        <th className="p-3">Price/Kg</th>
-                        <th className="p-3">Harvest Date</th>
+                        <th className="p-3">{t.cropType}</th>
+                        <th className="p-3">{t.gradeLabel}</th>
+                        <th className="p-3">{t.quantityKg}</th>
+                        <th className="p-3">{t.pricePerKg}</th>
+                        <th className="p-3">{t.harvestDate}</th>
                         <th className="p-3">Status</th>
                       </tr>
                     </thead>
@@ -483,7 +498,7 @@ export default function FarmerPage() {
                             </div>
                           </td>
                           <td className="p-3">
-                            <span className="bg-emerald-100 text-[#064e3b] font-bold px-2 py-0.5 rounded text-[10px]">
+                            <span className="bg-[#064e3b] text-white font-bold px-2 py-0.5 rounded text-[10px]">
                               {item.grade}
                             </span>
                           </td>
@@ -513,7 +528,7 @@ export default function FarmerPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                     <Calendar className="w-4 h-4 text-[#064e3b]" />
-                    <h3 className="font-bold text-slate-900 text-sm">Forward Harvest Schedule</h3>
+                    <h3 className="font-bold text-slate-900 text-sm">{t.feature3Title}</h3>
                   </div>
 
                   <div className="space-y-3 text-xs">
@@ -557,7 +572,7 @@ export default function FarmerPage() {
         {activeTab === 'inbox' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">Commercial Buyer Quotations & Bids</h3>
+              <h3 className="font-bold text-slate-900 text-sm">{t.offersInboxTab}</h3>
               <span className="text-xs text-slate-500 font-medium">{offers.length} Total Offers Received</span>
             </div>
 
@@ -571,9 +586,23 @@ export default function FarmerPage() {
                         <span className="text-[10px] text-slate-400">• {off.createdAt}</span>
                       </div>
                       <h4 className="font-extrabold text-slate-900 text-base">{off.produceTitle}</h4>
-                      <p className="text-slate-600 font-medium mt-0.5">
-                        Buyer: <span className="font-bold text-slate-900">{off.buyerName}</span> ({off.buyerCompany})
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-slate-600 font-medium">
+                          Buyer: <span className="font-bold text-slate-900">{off.buyerName}</span> ({off.buyerCompany})
+                        </p>
+                        <button
+                          onClick={() => setContactTarget({
+                            isOpen: true,
+                            name: off.buyerName,
+                            role: 'Commercial Buyer',
+                            phone: off.buyerPhone || '+94 11 234 5678',
+                            produceTitle: off.produceTitle,
+                          })}
+                          className="text-[#064e3b] font-bold flex items-center gap-1 text-[10px] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 cursor-pointer"
+                        >
+                          <Phone className="w-3 h-3" /> Contact Buyer
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -614,7 +643,7 @@ export default function FarmerPage() {
                   {/* Negotiation Messages History Timeline */}
                   {off.messages && off.messages.length > 0 && (
                     <div className="space-y-2 pt-1">
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Negotiation Timeline</span>
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">{t.negotiationHistory}</span>
                       <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                         {off.messages.map((m) => (
                           <div
@@ -646,21 +675,21 @@ export default function FarmerPage() {
                         onClick={() => respondToOffer(off.id, 'accept')}
                         className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                       >
-                        <CheckCircle2 className="w-4 h-4" /> Accept Offer & Generate Contract
+                        <CheckCircle2 className="w-4 h-4" /> {t.acceptOffer}
                       </button>
 
                       <button
                         onClick={() => handleOpenCounterModal(off)}
                         className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
                       >
-                        <RefreshCw className="w-4 h-4" /> Propose Counter-Offer
+                        <RefreshCw className="w-4 h-4" /> {t.sendCounterOffer}
                       </button>
 
                       <button
                         onClick={() => handleOpenRejectModal(off)}
                         className="bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 border border-slate-200 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                       >
-                        <XCircle className="w-4 h-4" /> Decline
+                        <XCircle className="w-4 h-4" /> {t.rejectOffer}
                       </button>
                     </div>
                   )}
@@ -675,7 +704,7 @@ export default function FarmerPage() {
           <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div>
-                <h3 className="font-extrabold text-slate-900 text-sm">Produce Stock Catalog & Pre-Harvest Yields</h3>
+                <h3 className="font-extrabold text-slate-900 text-sm">{t.listingsTab}</h3>
                 <p className="text-[11px] text-slate-500">Manage ready stock harvest and forward pre-harvest contracts</p>
               </div>
 
@@ -712,12 +741,12 @@ export default function FarmerPage() {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 uppercase font-semibold text-[10px]">
-                    <th className="p-3">Produce Item</th>
-                    <th className="p-3">Grade</th>
-                    <th className="p-3">Available Stock</th>
-                    <th className="p-3">Baseline Price</th>
-                    <th className="p-3">Economic Hub</th>
-                    <th className="p-3">Harvest / Ready Date</th>
+                    <th className="p-3">{t.cropType}</th>
+                    <th className="p-3">{t.gradeLabel}</th>
+                    <th className="p-3">{t.quantityKg}</th>
+                    <th className="p-3">{t.pricePerKg}</th>
+                    <th className="p-3">{t.locationHub}</th>
+                    <th className="p-3">{t.harvestDate}</th>
                     <th className="p-3">Certifications</th>
                     <th className="p-3">Status</th>
                   </tr>
@@ -733,7 +762,7 @@ export default function FarmerPage() {
                         </div>
                       </td>
                       <td className="p-3">
-                        <span className="bg-emerald-100 text-[#064e3b] font-bold px-2 py-0.5 rounded text-[10px]">
+                        <span className="bg-[#064e3b] text-white font-bold px-2 py-0.5 rounded text-[10px]">
                           {item.grade}
                         </span>
                       </td>
@@ -774,8 +803,8 @@ export default function FarmerPage() {
           <div className="space-y-4">
             <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-2xs">
               <div>
-                <h3 className="font-extrabold text-slate-900 text-sm">Farm-Gate Pickup & Haulage Verification</h3>
-                <p className="text-xs text-slate-500">Present digital QR pickup passes to verified logistics drivers at farm loading</p>
+                <h3 className="font-extrabold text-slate-900 text-sm">{t.logisticsTitle}</h3>
+                <p className="text-xs text-slate-500">{t.logisticsSubtitle}</p>
               </div>
 
               <div className="space-y-3">
@@ -789,10 +818,23 @@ export default function FarmerPage() {
                         </span>
                       </div>
                       <h4 className="font-bold text-slate-900 text-sm">{ship.produceTitle}</h4>
-                      <p className="text-slate-600">
-                        Hauler: <span className="font-bold text-slate-900">{ship.haulerName}</span> ({ship.haulerVehicle})
-                      </p>
-                      <p className="text-slate-500 font-mono text-[11px]">Driver: {ship.driverName} • {ship.driverPhone}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-slate-600">
+                          Hauler: <span className="font-bold text-slate-900">{ship.haulerName}</span> ({ship.haulerVehicle})
+                        </p>
+                        <button
+                          onClick={() => setContactTarget({
+                            isOpen: true,
+                            name: ship.driverName,
+                            role: 'Logistics Driver',
+                            phone: ship.driverPhone || '+94 71 444 5566',
+                            produceTitle: ship.produceTitle,
+                          })}
+                          className="text-[#064e3b] font-bold flex items-center gap-1 text-[10px] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 cursor-pointer"
+                        >
+                          <Phone className="w-3 h-3" /> Call Driver
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-1 text-right">
@@ -833,12 +875,12 @@ export default function FarmerPage() {
 
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <span className="text-xs text-slate-400 block">Total Escrow Disbursed</span>
+                    <span className="text-xs text-slate-400 block">{t.pendingPayouts}</span>
                     <span className="text-2xl font-black text-[#064e3b]">LKR {totalCompletedValue.toLocaleString()}</span>
                   </div>
                   <button
                     onClick={() => setShowVerificationModal(true)}
-                    className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold text-xs px-3 py-2 rounded-xl transition-all"
+                    className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold text-xs px-3 py-2 rounded-xl transition-all cursor-pointer"
                   >
                     Update Account
                   </button>
@@ -848,7 +890,7 @@ export default function FarmerPage() {
 
             {/* Escrow Contracts List */}
             <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-2xs">
-              <h3 className="font-bold text-slate-900 text-sm">Escrow Settlement & Invoice History</h3>
+              <h3 className="font-bold text-slate-900 text-sm">{t.bankPayoutsTab}</h3>
 
               <div className="space-y-3 text-xs">
                 {contracts.map((ctr) => (
@@ -866,12 +908,27 @@ export default function FarmerPage() {
                       </span>
                     </div>
 
-                    <button
-                      onClick={() => setInvoiceModalContract(ctr)}
-                      className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
-                    >
-                      <FileText className="w-3.5 h-3.5" /> View Invoice
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setContactTarget({
+                          isOpen: true,
+                          name: ctr.buyerName,
+                          role: 'Commercial Buyer',
+                          phone: '+94 11 234 5678',
+                          produceTitle: ctr.produceTitle,
+                        })}
+                        className="bg-emerald-50 hover:bg-emerald-100 text-[#064e3b] border border-emerald-300 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer"
+                      >
+                        <Phone className="w-3.5 h-3.5" /> Call Buyer
+                      </button>
+
+                      <button
+                        onClick={() => setInvoiceModalContract(ctr)}
+                        className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5" /> View Invoice
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -883,7 +940,7 @@ export default function FarmerPage() {
         {activeTab === 'disputes' && (
           <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-2xs">
             <div>
-              <h3 className="font-extrabold text-slate-900 text-sm">Quality Dispute Tickets & Support</h3>
+              <h3 className="font-extrabold text-slate-900 text-sm">{t.disputesTab}</h3>
               <p className="text-xs text-slate-500">Review claims raised by commercial buyers and inspect evidence</p>
             </div>
 
@@ -924,7 +981,7 @@ export default function FarmerPage() {
           <div className="bg-white border border-slate-200 w-full max-w-xl rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200 my-auto">
             <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-slate-900 text-sm">Add New Produce Listing / අස්වැන්න එක් කරන්න</h3>
+                <h3 className="font-bold text-slate-900 text-sm">{t.modalListingTitle}</h3>
                 <p className="text-[11px] text-slate-500">List custom crop stock or pre-harvest forward contracts for buyers</p>
               </div>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
@@ -936,7 +993,7 @@ export default function FarmerPage() {
               {/* Crop Variety & Custom Name */}
               <div>
                 <label className="text-slate-700 font-semibold block mb-1">
-                  Crop Variety / Inventory Item (අස්වැන්න / ඉන්වෙන්ටරි නම) <span className="text-red-500">*</span>
+                  {t.cropType} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -968,20 +1025,20 @@ export default function FarmerPage() {
               {/* Quality Grade & Location District */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-700 font-semibold block mb-1">Quality Grade</label>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.gradeLabel}</label>
                   <select
                     value={grade}
                     onChange={(e) => setGrade(e.target.value as QualityGrade)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
                   >
-                    <option value="Grade A">Grade A (Premium Export / Supermarket)</option>
-                    <option value="Grade B">Grade B (Standard Commercial Grade)</option>
-                    <option value="Grade C">Grade C (Processing & Canning Grade)</option>
+                    <option value="Grade A">{t.gradeA}</option>
+                    <option value="Grade B">{t.gradeB}</option>
+                    <option value="Grade C">{t.gradeC}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-slate-700 font-semibold block mb-1">Farm District Location</label>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.locationDistrict}</label>
                   <select
                     value={locationDistrict}
                     onChange={(e) => setLocationDistrict(e.target.value)}
@@ -1004,7 +1061,7 @@ export default function FarmerPage() {
               {/* Quantity, Price & Harvest Date */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-slate-700 font-semibold block mb-1">Quantity (Kg)</label>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.quantityKg}</label>
                   <input
                     type="number"
                     min="1"
@@ -1016,7 +1073,7 @@ export default function FarmerPage() {
                 </div>
 
                 <div>
-                  <label className="text-slate-700 font-semibold block mb-1">Baseline Price/Kg (LKR)</label>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.pricePerKg}</label>
                   <input
                     type="number"
                     min="1"
@@ -1029,7 +1086,7 @@ export default function FarmerPage() {
 
                 <div>
                   <label className="text-slate-700 font-semibold block mb-1">
-                    Harvest Date (දිනය) <span className="text-red-500">*</span>
+                    {t.harvestDate} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -1044,7 +1101,7 @@ export default function FarmerPage() {
               {/* Pre-harvest option */}
               <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-slate-800 block text-xs">Pre-Harvest Advance Booking</span>
+                  <span className="font-bold text-slate-800 block text-xs">{t.isPreHarvest}</span>
                   <span className="text-[10px] text-slate-500">Allow buyers to contract crop before harvesting</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -1061,7 +1118,7 @@ export default function FarmerPage() {
               {/* Crop Photo / Image Selection Section */}
               <div>
                 <label className="text-slate-700 font-semibold block mb-1.5">
-                  Crop Photo / Image (ඡායාරූපය එක් කරන්න)
+                  Crop Photo / Image
                 </label>
                 
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-3">
@@ -1181,7 +1238,7 @@ export default function FarmerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Produce Notes & Field Description</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.cropDescription}</label>
                 <textarea
                   rows={2}
                   value={description}
@@ -1197,13 +1254,13 @@ export default function FarmerPage() {
                   onClick={() => setShowCreateModal(false)}
                   className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
                 >
-                  Publish Listing
+                  {t.submitListing}
                 </button>
               </div>
             </form>
@@ -1216,7 +1273,7 @@ export default function FarmerPage() {
         <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
             <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">Propose Counter-Offer to Buyer</h3>
+              <h3 className="font-bold text-slate-900 text-sm">{t.sendCounterOffer}</h3>
               <button onClick={() => setSelectedOfferForCounter(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
@@ -1230,7 +1287,7 @@ export default function FarmerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Proposed Counter Price per Kg (LKR)</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.offeredPrice}</label>
                 <input
                   type="number"
                   min="1"
@@ -1242,7 +1299,7 @@ export default function FarmerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Target Quantity (Kg)</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.targetQty}</label>
                 <input
                   type="number"
                   min="1"
@@ -1254,12 +1311,12 @@ export default function FarmerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Counter Note / Message</label>
+                <label className="text-slate-700 font-semibold block mb-1">Message Note</label>
                 <textarea
                   rows={2}
                   value={counterNote}
                   onChange={(e) => setCounterNote(e.target.value)}
-                  placeholder="e.g. Can accept LKR 128/kg if loading starts before 10 AM at Dambulla Hub..."
+                  placeholder="e.g. Can accept LKR 128/kg if loading starts before 10 AM..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none"
                 ></textarea>
               </div>
@@ -1270,13 +1327,13 @@ export default function FarmerPage() {
                   onClick={() => setSelectedOfferForCounter(null)}
                   className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
                 >
-                  Submit Counter-Offer
+                  {t.sendCounterOffer}
                 </button>
               </div>
             </form>
@@ -1289,7 +1346,7 @@ export default function FarmerPage() {
         <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
             <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">Decline Buyer Quotation</h3>
+              <h3 className="font-bold text-slate-900 text-sm">{t.rejectOffer}</h3>
               <button onClick={() => setSelectedOfferForReject(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
@@ -1317,13 +1374,13 @@ export default function FarmerPage() {
                   onClick={() => setSelectedOfferForReject(null)}
                   className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer"
                 >
-                  Back
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
                 >
-                  Confirm Decline
+                  {t.rejectOffer}
                 </button>
               </div>
             </form>
@@ -1364,7 +1421,7 @@ export default function FarmerPage() {
               onClick={() => setSelectedPickupShipment(null)}
               className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold py-2.5 rounded-xl transition-all cursor-pointer"
             >
-              Close Pass
+              {t.close}
             </button>
           </div>
         </div>
@@ -1380,6 +1437,17 @@ export default function FarmerPage() {
       {invoiceModalContract && (
         <InvoiceModal contract={invoiceModalContract} onClose={() => setInvoiceModalContract(null)} />
       )}
+
+      {/* MODAL 7: DIRECT CONTACT & TELEPHONY MODAL */}
+      <ContactModal
+        isOpen={contactTarget.isOpen}
+        onClose={() => setContactTarget((prev) => ({ ...prev, isOpen: false }))}
+        contactName={contactTarget.name}
+        contactRole={contactTarget.role}
+        phone={contactTarget.phone}
+        district={contactTarget.district}
+        produceTitle={contactTarget.produceTitle}
+      />
     </div>
   );
 }
