@@ -49,7 +49,8 @@ import {
   Tag,
   Store,
   FileCheck,
-  Phone
+  Phone,
+  Calculator
 } from 'lucide-react';
 
 export default function FarmerPage() {
@@ -1098,6 +1099,20 @@ export default function FarmerPage() {
                 </div>
               </div>
 
+              {/* Live Listing Total Estimated Batch Value */}
+              <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-xl p-3 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-[#064e3b]" />
+                  <span className="font-semibold text-slate-700">Estimated Total Batch Value / මුළු වටිනාකම:</span>
+                  <span className="text-[11px] text-slate-500">
+                    ({(quantityKg || 0).toLocaleString()} Kg × LKR {(pricePerKg || 0).toLocaleString()})
+                  </span>
+                </div>
+                <span className="font-black text-sm text-[#064e3b]">
+                  LKR {((quantityKg || 0) * (pricePerKg || 0)).toLocaleString()}
+                </span>
+              </div>
+
               {/* Pre-harvest option */}
               <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
                 <div>
@@ -1291,8 +1306,8 @@ export default function FarmerPage() {
                 <input
                   type="number"
                   min="1"
-                  value={counterPrice}
-                  onChange={(e) => setCounterPrice(Number(e.target.value))}
+                  value={counterPrice === 0 ? '' : counterPrice}
+                  onChange={(e) => setCounterPrice(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-[#064e3b] text-base focus:outline-none"
                   required
                 />
@@ -1303,11 +1318,32 @@ export default function FarmerPage() {
                 <input
                   type="number"
                   min="1"
-                  value={counterQty}
-                  onChange={(e) => setCounterQty(Number(e.target.value))}
+                  value={counterQty === 0 ? '' : counterQty}
+                  onChange={(e) => setCounterQty(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none"
                   required
                 />
+              </div>
+
+              {/* LIVE TOTAL VALUE CARD */}
+              <div className="bg-gradient-to-r from-emerald-50 via-teal-50/60 to-emerald-50 border border-emerald-200/90 rounded-xl p-3.5 flex items-center justify-between shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#064e3b] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Calculator className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-emerald-950 block">Total Counter Value / සම්පූර්ණ මුදල</span>
+                    <span className="text-[11px] text-emerald-700 font-medium">
+                      {(counterQty || 0).toLocaleString()} Kg × LKR {(counterPrice || 0).toLocaleString()}/kg
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">Estimated Total</span>
+                  <span className="text-lg font-black text-[#064e3b]">
+                    LKR {((counterQty || 0) * (counterPrice || 0)).toLocaleString()}
+                  </span>
+                </div>
               </div>
 
               <div>

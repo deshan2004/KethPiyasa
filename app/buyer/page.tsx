@@ -46,7 +46,8 @@ import {
   FileCheck,
   Map,
   Globe,
-  Phone
+  Phone,
+  Calculator
 } from 'lucide-react';
 
 export default function BuyerPage() {
@@ -939,8 +940,8 @@ export default function BuyerPage() {
                 <input
                   type="number"
                   min="1"
-                  value={targetQty}
-                  onChange={(e) => setTargetQty(Number(e.target.value))}
+                  value={targetQty === 0 ? '' : targetQty}
+                  onChange={(e) => setTargetQty(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 text-base focus:outline-none focus:border-[#064e3b]"
                   required
                 />
@@ -951,11 +952,32 @@ export default function BuyerPage() {
                 <input
                   type="number"
                   min="1"
-                  value={offeredPrice}
-                  onChange={(e) => setOfferedPrice(Number(e.target.value))}
+                  value={offeredPrice === 0 ? '' : offeredPrice}
+                  onChange={(e) => setOfferedPrice(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-[#064e3b] text-base focus:outline-none focus:border-[#064e3b]"
                   required
                 />
+              </div>
+
+              {/* LIVE TOTAL VALUE CARD */}
+              <div className="bg-gradient-to-r from-emerald-50 via-teal-50/60 to-emerald-50 border border-emerald-200/90 rounded-xl p-3.5 flex items-center justify-between shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#064e3b] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Calculator className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-emerald-950 block">Total Offer Value / සම්පූර්ණ මුදල</span>
+                    <span className="text-[11px] text-emerald-700 font-medium">
+                      {(targetQty || 0).toLocaleString()} Kg × LKR {(offeredPrice || 0).toLocaleString()}/kg
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">Estimated Total</span>
+                  <span className="text-lg font-black text-[#064e3b]">
+                    LKR {((targetQty || 0) * (offeredPrice || 0)).toLocaleString()}
+                  </span>
+                </div>
               </div>
 
               <div>
@@ -1022,8 +1044,8 @@ export default function BuyerPage() {
                 <input
                   type="number"
                   min="1"
-                  value={counterPrice}
-                  onChange={(e) => setCounterPrice(Number(e.target.value))}
+                  value={counterPrice === 0 ? '' : counterPrice}
+                  onChange={(e) => setCounterPrice(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-[#064e3b] text-base focus:outline-none"
                   required
                 />
@@ -1034,11 +1056,32 @@ export default function BuyerPage() {
                 <input
                   type="number"
                   min="1"
-                  value={counterQty}
-                  onChange={(e) => setCounterQty(Number(e.target.value))}
+                  value={counterQty === 0 ? '' : counterQty}
+                  onChange={(e) => setCounterQty(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none"
                   required
                 />
+              </div>
+
+              {/* LIVE TOTAL VALUE CARD */}
+              <div className="bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 rounded-xl p-3.5 flex items-center justify-between shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Calculator className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-blue-950 block">Total Counter Value / සම්පූර්ණ මුදල</span>
+                    <span className="text-[11px] text-blue-700 font-medium">
+                      {(counterQty || 0).toLocaleString()} Kg × LKR {(counterPrice || 0).toLocaleString()}/kg
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-blue-800 font-bold uppercase tracking-wider block">Estimated Total</span>
+                  <span className="text-lg font-black text-blue-700">
+                    LKR {((counterQty || 0) * (counterPrice || 0)).toLocaleString()}
+                  </span>
+                </div>
               </div>
 
               <div>
