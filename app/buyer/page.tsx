@@ -47,7 +47,10 @@ import {
   Map,
   Globe,
   Phone,
-  Calculator
+  Calculator,
+  Minus,
+  Plus,
+  Sparkles
 } from 'lucide-react';
 
 export default function BuyerPage() {
@@ -83,6 +86,20 @@ export default function BuyerPage() {
   const [offeredPrice, setOfferedPrice] = useState<number>(120);
   const [deliveryDate, setDeliveryDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [quoteNote, setQuoteNote] = useState<string>('');
+
+  const getRelativeDate = (offsetDays: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return d.toISOString().split('T')[0];
+  };
+
+  const handleAppendQuoteRequirement = (reqText: string) => {
+    setQuoteNote((prev) => {
+      if (!prev || !prev.trim()) return reqText;
+      if (prev.includes(reqText)) return prev;
+      return `${prev}, ${reqText}`;
+    });
+  };
 
   // Counter Offer Modal State
   const [selectedOfferForCounter, setSelectedOfferForCounter] = useState<NegotiationOffer | null>(null);
@@ -921,149 +938,439 @@ export default function BuyerPage() {
       </main>
 
       {/* MODAL 1: B2B PRICE QUOTE OFFER MODAL */}
-      {biddingModalListing && (
-        <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
-            <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">{t.issuePriceQuoteTitle || 'Issue B2B Price Quote Offer'}</h3>
-              <button onClick={() => setBiddingModalListing(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {biddingModalListing && (() => {
+        const minOrder = biddingModalListing.minOrderQtyKg || 1;
+        const maxStock = biddingModalListing.quantityKg;
+        const isQtyOver = targetQty > maxStock;
+        const isQtyUnder = targetQty > 0 && targetQty < minOrder;
+        const batchPercent = Math.min(100, Math.max(0, Math.round(((targetQty || 0) / maxStock) * 100)));
+        const priceDiff = offeredPrice - biddingModalListing.pricePerKg;
+        const discountPct = Math.round(Math.abs(priceDiff) / biddingModalListing.pricePerKg * 100);
 
-            <form onSubmit={handleSendQuoteSubmit} className="p-5 space-y-4 text-xs">
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
-                <p className="font-extrabold text-slate-900 text-sm">{biddingModalListing.title}</p>
-                <p className="text-slate-600 font-medium">{t.modalSellerLabel || 'Seller'}: {biddingModalListing.farmerName} ({biddingModalListing.locationDistrict})</p>
-                <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-slate-200">
-                  <p className="text-[#064e3b] font-black text-xs">{t.baselineFarmPrice || 'Baseline Farm Price'}: LKR {biddingModalListing.pricePerKg}/kg</p>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-md">
-                      {t.availableStock || 'Available Stock'}: {biddingModalListing.quantityKg.toLocaleString()} Kg
-                    </span>
-                    {biddingModalListing.minOrderQtyKg ? (
-                      <span className="text-[11px] font-semibold text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded-md">
-                        {t.minOrderQty || 'Min Order'}: {biddingModalListing.minOrderQtyKg.toLocaleString()} Kg
-                      </span>
-                    ) : null}
-                  </div>
+        return (
+          <div className="fixed inset-0 z-[9999] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+            <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col">
+              {/* MODAL HEADER */}
+              <div className="bg-slate-50/90 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">
+                    {t.issuePriceQuoteTitle || 'Issue B2B Price Quote Offer'}
+                  </h3>
                 </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-slate-700 font-semibold">{t.requestedQtyLabel || 'Target Volume (Kg)'}</label>
-                  <span className="text-[11px] font-bold text-slate-500">
-                    Max: {biddingModalListing.quantityKg.toLocaleString()} Kg
-                  </span>
-                </div>
-                <input
-                  type="number"
-                  min={biddingModalListing.minOrderQtyKg || 1}
-                  max={biddingModalListing.quantityKg}
-                  value={targetQty === 0 ? '' : targetQty}
-                  onChange={(e) => setTargetQty(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
-                  className={`w-full bg-slate-50 border rounded-xl px-3 py-2 font-bold text-slate-800 text-base focus:outline-none transition-all ${
-                    targetQty > biddingModalListing.quantityKg || (biddingModalListing.minOrderQtyKg && targetQty > 0 && targetQty < biddingModalListing.minOrderQtyKg)
-                      ? 'border-rose-400 bg-rose-50/40 text-rose-900 focus:border-rose-500'
-                      : 'border-slate-200 focus:border-[#064e3b]'
-                  }`}
-                  required
-                />
-                {targetQty > biddingModalListing.quantityKg && (
-                  <div className="mt-1.5 p-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg flex items-center gap-1.5 font-semibold text-[11px]">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
-                    <span>{t.exceedsStockError || 'Target volume exceeds available stock'}: {biddingModalListing.quantityKg.toLocaleString()} Kg max</span>
-                  </div>
-                )}
-                {biddingModalListing.minOrderQtyKg && targetQty > 0 && targetQty < biddingModalListing.minOrderQtyKg && (
-                  <div className="mt-1.5 p-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg flex items-center gap-1.5 font-semibold text-[11px]">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
-                    <span>{t.belowMinOrderError || 'Target volume is below minimum order requirement'}: {biddingModalListing.minOrderQtyKg.toLocaleString()} Kg min</span>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="text-slate-700 font-semibold block mb-1">{t.offeredPriceLabel || 'Offered Price per Kg (LKR)'}</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={offeredPrice === 0 ? '' : offeredPrice}
-                  onChange={(e) => setOfferedPrice(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-[#064e3b] text-base focus:outline-none focus:border-[#064e3b]"
-                  required
-                />
-              </div>
-
-              {/* LIVE TOTAL VALUE CARD */}
-              <div className="bg-gradient-to-r from-emerald-50 via-teal-50/60 to-emerald-50 border border-emerald-200/90 rounded-xl p-3.5 flex items-center justify-between shadow-xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#064e3b] text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Calculator className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-emerald-950 block">{t.totalOfferValue || 'Total Offer Value'}</span>
-                    <span className="text-[11px] text-emerald-700 font-medium">
-                      {(targetQty || 0).toLocaleString()} Kg × LKR {(offeredPrice || 0).toLocaleString()}/kg
-                    </span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">{t.estimatedTotal || 'Estimated Total'}</span>
-                  <span className="text-lg font-black text-[#064e3b]">
-                    LKR {((targetQty || 0) * (offeredPrice || 0)).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-slate-700 font-semibold block mb-1">{t.deliveryWindowLabel || 'Requested Delivery Date'}</label>
-                <input
-                  type="date"
-                  value={deliveryDate}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none focus:border-[#064e3b]"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-slate-700 font-semibold block mb-1">{t.quoteNoteLabel || 'Quote Note / Requirements'}</label>
-                <textarea
-                  rows={2}
-                  value={quoteNote}
-                  onChange={(e) => setQuoteNote(e.target.value)}
-                  placeholder={t.quoteNotePlaceholder || 'e.g. Require delivery to Welisara Central Warehouse before 08 AM...'}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none"
-                ></textarea>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setBiddingModalListing(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer"
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer"
                 >
-                  {t.cancel || 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  disabled={
-                    targetQty <= 0 ||
-                    targetQty > biddingModalListing.quantityKg ||
-                    (biddingModalListing.minOrderQtyKg ? targetQty < biddingModalListing.minOrderQtyKg : false) ||
-                    offeredPrice <= 0
-                  }
-                  className="bg-[#064e3b] hover:bg-[#043e2f] disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
-                >
-                  {t.submitQuoteBtn || 'Submit Quote Offer'}
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </form>
+
+              {/* MODAL SCROLLABLE BODY */}
+              <form onSubmit={handleSendQuoteSubmit} className="p-5 space-y-4 text-xs overflow-y-auto flex-1">
+                {/* PRODUCE SUMMARY BANNER */}
+                <div className="bg-slate-50/90 p-3.5 rounded-xl border border-slate-200 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-extrabold text-slate-900 text-sm leading-tight">{biddingModalListing.title}</p>
+                      <p className="text-slate-600 font-medium text-[11px] mt-0.5">
+                        {t.modalSellerLabel || 'Seller'}: <span className="text-slate-900 font-semibold">{biddingModalListing.farmerName}</span> ({biddingModalListing.locationDistrict})
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-[#064e3b]">
+                      {biddingModalListing.grade}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-slate-200/70">
+                    <p className="text-[#064e3b] font-black text-xs">
+                      {t.baselineFarmPrice || 'Baseline Farm Price'}: LKR {biddingModalListing.pricePerKg}/kg
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold text-emerald-900 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-md shadow-2xs">
+                        {t.availableStock || 'Available Stock'}: {maxStock.toLocaleString()} Kg
+                      </span>
+                      {biddingModalListing.minOrderQtyKg ? (
+                        <span className="text-[11px] font-semibold text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded-md">
+                          {t.minOrderQty || 'Min Order'}: {biddingModalListing.minOrderQtyKg.toLocaleString()} Kg
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 1. TARGET VOLUME (WITH INTERACTIVE SLIDER & PRESET CHIPS) */}
+                <div className="space-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-200/70">
+                  <div className="flex items-center justify-between">
+                    <label className="text-slate-800 font-bold flex items-center gap-1.5 text-xs">
+                      {t.requestedQtyLabel || 'Target Volume (Kg)'}
+                    </label>
+                    <span className="text-[11px] font-bold text-slate-500">
+                      Max: {maxStock.toLocaleString()} Kg
+                    </span>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={minOrder}
+                      max={maxStock}
+                      value={targetQty === 0 ? '' : targetQty}
+                      onChange={(e) => setTargetQty(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
+                      className={`w-full bg-white border rounded-xl px-3 py-2 font-black text-slate-900 text-base focus:outline-none transition-all shadow-2xs ${
+                        isQtyOver || isQtyUnder
+                          ? 'border-rose-400 bg-rose-50/40 text-rose-900 focus:border-rose-500 ring-2 ring-rose-200'
+                          : 'border-slate-300 focus:border-[#064e3b] focus:ring-2 focus:ring-emerald-100'
+                      }`}
+                      required
+                    />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                      Kg
+                    </span>
+                  </div>
+
+                  {/* Range Slider */}
+                  <div className="pt-1 px-1">
+                    <input
+                      type="range"
+                      min={minOrder}
+                      max={maxStock}
+                      step={Math.max(10, Math.round(maxStock / 100))}
+                      value={Math.min(maxStock, Math.max(minOrder, targetQty || 0))}
+                      onChange={(e) => setTargetQty(Number(e.target.value))}
+                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#064e3b] transition-all"
+                    />
+                    <div className="flex justify-between items-center text-[10px] text-slate-400 font-medium mt-1">
+                      <span>{minOrder.toLocaleString()} Kg ({t.minOrderQty || 'Min'})</span>
+                      <span className="font-extrabold text-[#064e3b] bg-emerald-100/70 px-2 py-0.5 rounded-md border border-emerald-200/80">
+                        {batchPercent}% {t.ofBatch || 'of harvest'}
+                      </span>
+                      <span>{maxStock.toLocaleString()} Kg ({t.entireBatch || 'All'})</span>
+                    </div>
+                  </div>
+
+                  {/* Quick Fill Preset Buttons */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.quickPresets || 'Quick Fill'}:</span>
+                    {biddingModalListing.minOrderQtyKg ? (
+                      <button
+                        type="button"
+                        onClick={() => setTargetQty(minOrder)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                          targetQty === minOrder
+                            ? 'bg-[#064e3b] text-white shadow-xs scale-102'
+                            : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        {t.minOrderQty || 'Min'}: {minOrder.toLocaleString()} Kg
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setTargetQty(Math.max(minOrder, Math.round(maxStock * 0.25)))}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        targetQty === Math.round(maxStock * 0.25)
+                          ? 'bg-[#064e3b] text-white shadow-xs scale-102'
+                          : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      25% ({Math.round(maxStock * 0.25).toLocaleString()} Kg)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTargetQty(Math.max(minOrder, Math.round(maxStock * 0.5)))}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        targetQty === Math.round(maxStock * 0.5)
+                          ? 'bg-[#064e3b] text-white shadow-xs scale-102'
+                          : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      50% ({Math.round(maxStock * 0.5).toLocaleString()} Kg)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTargetQty(maxStock)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        targetQty === maxStock
+                          ? 'bg-[#064e3b] text-white shadow-xs scale-102'
+                          : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {t.entireBatch || 'Entire Batch'} ({maxStock.toLocaleString()} Kg)
+                    </button>
+                  </div>
+
+                  {/* Validation Alerts */}
+                  {isQtyOver && (
+                    <div className="p-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg flex items-center gap-1.5 font-semibold text-[11px] animate-in fade-in duration-150">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+                      <span>{t.exceedsStockError || 'Target volume exceeds available stock'}: {maxStock.toLocaleString()} Kg max</span>
+                    </div>
+                  )}
+                  {isQtyUnder && (
+                    <div className="p-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg flex items-center gap-1.5 font-semibold text-[11px] animate-in fade-in duration-150">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                      <span>{t.belowMinOrderError || 'Target volume is below minimum order requirement'}: {minOrder.toLocaleString()} Kg min</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. OFFERED PRICE (WITH STEPPER BUTTONS & SENTIMENT INDICATOR) */}
+                <div className="space-y-2 bg-slate-50/50 p-3 rounded-xl border border-slate-200/70">
+                  <div className="flex items-center justify-between">
+                    <label className="text-slate-800 font-bold text-xs">{t.offeredPriceLabel || 'Offered Price per Kg (LKR)'}</label>
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      Baseline: LKR {biddingModalListing.pricePerKg}/kg
+                    </span>
+                  </div>
+
+                  {/* Stepper Input Row */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setOfferedPrice((prev) => Math.max(1, prev - 5))}
+                      className="px-2.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 active:scale-95 text-slate-800 font-extrabold text-xs shrink-0 cursor-pointer transition-all shadow-2xs"
+                      title="-5 LKR"
+                    >
+                      -5
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setOfferedPrice((prev) => Math.max(1, prev - 1))}
+                      className="p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 active:scale-95 text-slate-800 font-extrabold text-xs shrink-0 cursor-pointer transition-all shadow-2xs"
+                      title="-1 LKR"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                        LKR
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={offeredPrice === 0 ? '' : offeredPrice}
+                        onChange={(e) => setOfferedPrice(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
+                        className="w-full bg-white border border-slate-300 rounded-xl pl-11 pr-11 py-2 font-black text-[#064e3b] text-base focus:outline-none focus:border-[#064e3b] focus:ring-2 focus:ring-emerald-100 transition-all shadow-2xs text-center"
+                        required
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                        /kg
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setOfferedPrice((prev) => prev + 1)}
+                      className="p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 active:scale-95 text-slate-800 font-extrabold text-xs shrink-0 cursor-pointer transition-all shadow-2xs"
+                      title="+1 LKR"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setOfferedPrice((prev) => prev + 5)}
+                      className="px-2.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 active:scale-95 text-slate-800 font-extrabold text-xs shrink-0 cursor-pointer transition-all shadow-2xs"
+                      title="+5 LKR"
+                    >
+                      +5
+                    </button>
+                  </div>
+
+                  {/* Price Sentiment Pill & Reset to Farm Baseline */}
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 pt-0.5">
+                    {offeredPrice > 0 ? (
+                      priceDiff === 0 ? (
+                        <span className="text-emerald-900 font-bold flex items-center gap-1.5 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200 text-[11px]">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                          {t.baselineMatch || 'Exact Baseline Match'}
+                        </span>
+                      ) : priceDiff < 0 ? (
+                        <span className="text-amber-900 font-bold flex items-center gap-1.5 bg-amber-100/80 px-2 py-0.5 rounded-md border border-amber-200 text-[11px]">
+                          <TrendingDown className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                          -LKR {Math.abs(priceDiff).toLocaleString()} {t.belowBaselineBadge || 'below baseline'} ({discountPct}% discount)
+                        </span>
+                      ) : (
+                        <span className="text-emerald-950 font-bold flex items-center gap-1.5 bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-300 text-[11px]">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                          +LKR {priceDiff.toLocaleString()} {t.aboveBaselineBadge || 'premium offer'} (Priority queue)
+                        </span>
+                      )
+                    ) : null}
+
+                    {offeredPrice !== biddingModalListing.pricePerKg && (
+                      <button
+                        type="button"
+                        onClick={() => setOfferedPrice(biddingModalListing.pricePerKg)}
+                        className="text-[11px] font-bold text-[#064e3b] hover:underline cursor-pointer ml-auto flex items-center gap-1"
+                      >
+                        ↺ Baseline (LKR {biddingModalListing.pricePerKg})
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. LIVE TOTAL VALUE & ESCROW GUARANTEE CARD */}
+                <div className="bg-gradient-to-r from-emerald-50 via-teal-50/70 to-emerald-50 border border-emerald-200/90 rounded-2xl p-4 shadow-xs space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-[#064e3b] text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <Calculator className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-extrabold text-emerald-950 block">{t.totalOfferValue || 'Total Offer Value'}</span>
+                        <span className="text-[11px] text-emerald-700 font-medium">
+                          {(targetQty || 0).toLocaleString()} Kg × LKR {(offeredPrice || 0).toLocaleString()}/kg
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">{t.estimatedTotal || 'Estimated Total'}</span>
+                      <span className="text-xl sm:text-2xl font-black text-[#064e3b]">
+                        LKR {((targetQty || 0) * (offeredPrice || 0)).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[11px] text-emerald-900 font-medium">
+                    <span className="flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-[#064e3b] shrink-0" /> 100% Escrow Protected
+                    </span>
+                    <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100/60 px-2 py-0.5 rounded">
+                      Funds Released After QR Inspection
+                    </span>
+                  </div>
+                </div>
+
+                {/* 4. REQUESTED DELIVERY DATE (WITH QUICK CHIPS) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-slate-800 font-bold text-xs">{t.deliveryWindowLabel || 'Requested Delivery Date'}</label>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryDate(getRelativeDate(0))}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                          deliveryDate === getRelativeDate(0) ? 'bg-[#064e3b] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {t.today || 'Today'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryDate(getRelativeDate(1))}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                          deliveryDate === getRelativeDate(1) ? 'bg-[#064e3b] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {t.tomorrow || 'Tomorrow'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryDate(getRelativeDate(3))}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                          deliveryDate === getRelativeDate(3) ? 'bg-[#064e3b] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {t.in3Days || '+3 Days'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryDate(getRelativeDate(7))}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                          deliveryDate === getRelativeDate(7) ? 'bg-[#064e3b] text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {t.in7Days || '+7 Days'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <input
+                    type="date"
+                    value={deliveryDate}
+                    onChange={(e) => setDeliveryDate(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 focus:outline-none focus:border-[#064e3b] shadow-2xs"
+                    required
+                  />
+                </div>
+
+                {/* 5. QUOTE NOTE & QUICK REQUIREMENT TAGS */}
+                <div className="space-y-1.5">
+                  <label className="text-slate-800 font-bold block text-xs">{t.quoteNoteLabel || 'Quote Note / Requirements'}</label>
+                  <textarea
+                    rows={2}
+                    value={quoteNote}
+                    onChange={(e) => setQuoteNote(e.target.value)}
+                    placeholder={t.quoteNotePlaceholder || 'e.g. Require delivery to Welisara Central Warehouse before 08 AM...'}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium text-slate-800 focus:outline-none focus:border-[#064e3b] shadow-2xs"
+                  ></textarea>
+
+                  {/* Common Requirement Chips */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.quickRequirements || 'Common Requirements'}:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleAppendQuoteRequirement(t.reqMorning || 'Delivery before 08 AM')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold transition-all cursor-pointer"
+                    >
+                      🚚 {t.reqMorning || 'Delivery before 08 AM'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAppendQuoteRequirement(t.reqMoisture || 'Moisture tested sacks')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold transition-all cursor-pointer"
+                    >
+                      📦 {t.reqMoisture || 'Moisture tested sacks'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAppendQuoteRequirement(t.reqPickup || 'Direct farm pickup')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold transition-all cursor-pointer"
+                    >
+                      🚜 {t.reqPickup || 'Direct farm pickup'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAppendQuoteRequirement(t.reqGap || 'GAP Certified batch')}
+                      className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold transition-all cursor-pointer"
+                    >
+                      🏷️ {t.reqGap || 'GAP Certified batch'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* MODAL FOOTER */}
+                <div className="pt-3 flex items-center justify-between gap-3 border-t border-slate-200 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setBiddingModalListing(null)}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all cursor-pointer"
+                  >
+                    {t.cancel || 'Cancel'}
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={
+                      targetQty <= 0 ||
+                      isQtyOver ||
+                      isQtyUnder ||
+                      offeredPrice <= 0
+                    }
+                    className="flex-1 bg-[#064e3b] hover:bg-[#043e2f] active:scale-[0.99] disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>{t.submitQuoteBtn || 'Submit Quote Offer'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* MODAL 2: COUNTER OFFER MODAL */}
       {selectedOfferForCounter && (() => {
