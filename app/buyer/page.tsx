@@ -181,6 +181,9 @@ export default function BuyerPage() {
   const handleSendQuoteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!biddingModalListing) return;
+    if (targetQty <= 0) return;
+    if (targetQty > biddingModalListing.quantityKg) return;
+    if (biddingModalListing.minOrderQtyKg && targetQty < biddingModalListing.minOrderQtyKg) return;
     createOffer(biddingModalListing.id, targetQty, offeredPrice, deliveryDate, quoteNote);
     setBiddingModalListing(null);
     setActiveTab('negotiations');
@@ -929,22 +932,56 @@ export default function BuyerPage() {
             </div>
 
             <form onSubmit={handleSendQuoteSubmit} className="p-5 space-y-4 text-xs">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
                 <p className="font-extrabold text-slate-900 text-sm">{biddingModalListing.title}</p>
                 <p className="text-slate-600 font-medium">{t.modalSellerLabel || 'Seller'}: {biddingModalListing.farmerName} ({biddingModalListing.locationDistrict})</p>
-                <p className="text-[#064e3b] font-black text-xs">{t.baselineFarmPrice || 'Baseline Farm Price'}: LKR {biddingModalListing.pricePerKg}/kg</p>
+                <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-slate-200">
+                  <p className="text-[#064e3b] font-black text-xs">{t.baselineFarmPrice || 'Baseline Farm Price'}: LKR {biddingModalListing.pricePerKg}/kg</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-md">
+                      {t.availableStock || 'Available Stock'}: {biddingModalListing.quantityKg.toLocaleString()} Kg
+                    </span>
+                    {biddingModalListing.minOrderQtyKg ? (
+                      <span className="text-[11px] font-semibold text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded-md">
+                        {t.minOrderQty || 'Min Order'}: {biddingModalListing.minOrderQtyKg.toLocaleString()} Kg
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">{t.requestedQtyLabel || 'Target Volume (Kg)'}</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-slate-700 font-semibold">{t.requestedQtyLabel || 'Target Volume (Kg)'}</label>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    Max: {biddingModalListing.quantityKg.toLocaleString()} Kg
+                  </span>
+                </div>
                 <input
                   type="number"
-                  min="1"
+                  min={biddingModalListing.minOrderQtyKg || 1}
+                  max={biddingModalListing.quantityKg}
                   value={targetQty === 0 ? '' : targetQty}
                   onChange={(e) => setTargetQty(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 text-base focus:outline-none focus:border-[#064e3b]"
+                  className={`w-full bg-slate-50 border rounded-xl px-3 py-2 font-bold text-slate-800 text-base focus:outline-none transition-all ${
+                    targetQty > biddingModalListing.quantityKg || (biddingModalListing.minOrderQtyKg && targetQty > 0 && targetQty < biddingModalListing.minOrderQtyKg)
+                      ? 'border-rose-400 bg-rose-50/40 text-rose-900 focus:border-rose-500'
+                      : 'border-slate-200 focus:border-[#064e3b]'
+                  }`}
                   required
                 />
+                {targetQty > biddingModalListing.quantityKg && (
+                  <div className="mt-1.5 p-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg flex items-center gap-1.5 font-semibold text-[11px]">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+                    <span>{t.exceedsStockError || 'Target volume exceeds available stock'}: {biddingModalListing.quantityKg.toLocaleString()} Kg max</span>
+                  </div>
+                )}
+                {biddingModalListing.minOrderQtyKg && targetQty > 0 && targetQty < biddingModalListing.minOrderQtyKg && (
+                  <div className="mt-1.5 p-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg flex items-center gap-1.5 font-semibold text-[11px]">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                    <span>{t.belowMinOrderError || 'Target volume is below minimum order requirement'}: {biddingModalListing.minOrderQtyKg.toLocaleString()} Kg min</span>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1012,7 +1049,13 @@ export default function BuyerPage() {
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
+                  disabled={
+                    targetQty <= 0 ||
+                    targetQty > biddingModalListing.quantityKg ||
+                    (biddingModalListing.minOrderQtyKg ? targetQty < biddingModalListing.minOrderQtyKg : false) ||
+                    offeredPrice <= 0
+                  }
+                  className="bg-[#064e3b] hover:bg-[#043e2f] disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
                 >
                   {t.submitQuoteBtn || 'Submit Quote Offer'}
                 </button>
@@ -1023,97 +1066,132 @@ export default function BuyerPage() {
       )}
 
       {/* MODAL 2: COUNTER OFFER MODAL */}
-      {selectedOfferForCounter && (
-        <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
-            <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">{t.proposeCounterTitle || 'Propose Counter Quote to Farmer'}</h3>
-              <button onClick={() => setSelectedOfferForCounter(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSendCounterOfferSubmit} className="p-5 space-y-4 text-xs">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-slate-500 font-bold block">{selectedOfferForCounter.produceTitle}</span>
-                <span className="text-slate-700 font-medium block">{t.modalSellerLabel || 'Seller'}: {selectedOfferForCounter.farmerName}</span>
+      {selectedOfferForCounter && (() => {
+        const counterListing = listings.find((l) => l.id === selectedOfferForCounter.listingId);
+        const maxStock = counterListing?.quantityKg;
+        const minOrder = counterListing?.minOrderQtyKg;
+        const isQtyOver = maxStock ? counterQty > maxStock : false;
+        const isQtyUnder = minOrder && counterQty > 0 ? counterQty < minOrder : false;
+        return (
+          <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
+              <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 text-sm">{t.proposeCounterTitle || 'Propose Counter Quote to Farmer'}</h3>
+                <button onClick={() => setSelectedOfferForCounter(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              <div>
-                <label className="text-slate-700 font-semibold block mb-1">{t.offeredPriceLabel || 'Counter Price per Kg (LKR)'}</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={counterPrice === 0 ? '' : counterPrice}
-                  onChange={(e) => setCounterPrice(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-[#064e3b] text-base focus:outline-none"
-                  required
-                />
-              </div>
+              <form onSubmit={handleSendCounterOfferSubmit} className="p-5 space-y-4 text-xs">
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-slate-900 font-bold block">{selectedOfferForCounter.produceTitle}</span>
+                  <span className="text-slate-700 font-medium block">{t.modalSellerLabel || 'Seller'}: {selectedOfferForCounter.farmerName}</span>
+                  {maxStock ? (
+                    <span className="inline-block text-[11px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2 py-0.5 rounded-md mt-1">
+                      {t.availableStock || 'Available Stock'}: {maxStock.toLocaleString()} Kg
+                    </span>
+                  ) : null}
+                </div>
 
-              <div>
-                <label className="text-slate-700 font-semibold block mb-1">{t.requestedQtyLabel || 'Target Quantity (Kg)'}</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={counterQty === 0 ? '' : counterQty}
-                  onChange={(e) => setCounterQty(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none"
-                  required
-                />
-              </div>
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.offeredPriceLabel || 'Counter Price per Kg (LKR)'}</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={counterPrice === 0 ? '' : counterPrice}
+                    onChange={(e) => setCounterPrice(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-[#064e3b] text-base focus:outline-none"
+                    required
+                  />
+                </div>
 
-              {/* LIVE TOTAL VALUE CARD */}
-              <div className="bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 rounded-xl p-3.5 flex items-center justify-between shadow-xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Calculator className="w-4 h-4" />
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-700 font-semibold">{t.requestedQtyLabel || 'Target Quantity (Kg)'}</label>
+                    {maxStock ? (
+                      <span className="text-[11px] font-bold text-slate-500">Max: {maxStock.toLocaleString()} Kg</span>
+                    ) : null}
                   </div>
-                  <div>
-                    <span className="text-xs font-bold text-blue-950 block">{t.totalCounterValue || 'Total Counter Value'}</span>
-                    <span className="text-[11px] text-blue-700 font-medium">
-                      {(counterQty || 0).toLocaleString()} Kg × LKR {(counterPrice || 0).toLocaleString()}/kg
+                  <input
+                    type="number"
+                    min={minOrder || 1}
+                    max={maxStock}
+                    value={counterQty === 0 ? '' : counterQty}
+                    onChange={(e) => setCounterQty(e.target.value === '' ? 0 : Math.max(0, Number(e.target.value)))}
+                    className={`w-full bg-slate-50 border rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none transition-all ${
+                      isQtyOver || isQtyUnder
+                        ? 'border-rose-400 bg-rose-50/40 text-rose-900 focus:border-rose-500'
+                        : 'border-slate-200 focus:border-blue-600'
+                    }`}
+                    required
+                  />
+                  {isQtyOver && maxStock && (
+                    <div className="mt-1.5 p-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg flex items-center gap-1.5 font-semibold text-[11px]">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+                      <span>{t.exceedsStockError || 'Target volume exceeds available stock'}: {maxStock.toLocaleString()} Kg max</span>
+                    </div>
+                  )}
+                  {isQtyUnder && minOrder && (
+                    <div className="mt-1.5 p-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg flex items-center gap-1.5 font-semibold text-[11px]">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                      <span>{t.belowMinOrderError || 'Target volume is below minimum order requirement'}: {minOrder.toLocaleString()} Kg min</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* LIVE TOTAL VALUE CARD */}
+                <div className="bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 rounded-xl p-3.5 flex items-center justify-between shadow-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Calculator className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-blue-950 block">{t.totalCounterValue || 'Total Counter Value'}</span>
+                      <span className="text-[11px] text-blue-700 font-medium">
+                        {(counterQty || 0).toLocaleString()} Kg × LKR {(counterPrice || 0).toLocaleString()}/kg
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-blue-800 font-bold uppercase tracking-wider block">{t.estimatedTotal || 'Estimated Total'}</span>
+                    <span className="text-lg font-black text-blue-700">
+                      LKR {((counterQty || 0) * (counterPrice || 0)).toLocaleString()}
                     </span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-blue-800 font-bold uppercase tracking-wider block">{t.estimatedTotal || 'Estimated Total'}</span>
-                  <span className="text-lg font-black text-blue-700">
-                    LKR {((counterQty || 0) * (counterPrice || 0)).toLocaleString()}
-                  </span>
+
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.messageNoteLabel || 'Message Note'}</label>
+                  <textarea
+                    rows={2}
+                    value={counterNote}
+                    onChange={(e) => setCounterNote(e.target.value)}
+                    placeholder={t.messageNotePlaceholder || 'Mention delivery window or packaging...'}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none"
+                  ></textarea>
                 </div>
-              </div>
 
-              <div>
-                <label className="text-slate-700 font-semibold block mb-1">{t.messageNoteLabel || 'Message Note'}</label>
-                <textarea
-                  rows={2}
-                  value={counterNote}
-                  onChange={(e) => setCounterNote(e.target.value)}
-                  placeholder={t.messageNotePlaceholder || 'Mention delivery window or packaging...'}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none"
-                ></textarea>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setSelectedOfferForCounter(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 cursor-pointer"
-                >
-                  {t.cancel || 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl shadow-xs cursor-pointer"
-                >
-                  {t.sendCounterOffer || 'Send Counter Quote'}
-                </button>
-              </div>
-            </form>
+                <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedOfferForCounter(null)}
+                    className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 cursor-pointer"
+                  >
+                    {t.cancel || 'Cancel'}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={counterQty <= 0 || isQtyOver || isQtyUnder || counterPrice <= 0}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold px-5 py-2 rounded-xl shadow-xs cursor-pointer"
+                  >
+                    {t.sendCounterOffer || 'Send Counter Quote'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* MODAL 3: RAISE DISPUTE MODAL */}
       {selectedContractForDispute && (
