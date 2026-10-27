@@ -922,7 +922,7 @@ export default function BuyerPage() {
         <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
             <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">Issue B2B Price Quote Offer</h3>
+              <h3 className="font-bold text-slate-900 text-sm">{t.issuePriceQuoteTitle || 'Issue B2B Price Quote Offer'}</h3>
               <button onClick={() => setBiddingModalListing(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
@@ -931,12 +931,12 @@ export default function BuyerPage() {
             <form onSubmit={handleSendQuoteSubmit} className="p-5 space-y-4 text-xs">
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
                 <p className="font-extrabold text-slate-900 text-sm">{biddingModalListing.title}</p>
-                <p className="text-slate-600 font-medium">Seller: {biddingModalListing.farmerName} ({biddingModalListing.locationDistrict})</p>
-                <p className="text-[#064e3b] font-black text-xs">Baseline Farm Price: LKR {biddingModalListing.pricePerKg}/kg</p>
+                <p className="text-slate-600 font-medium">{t.modalSellerLabel || 'Seller'}: {biddingModalListing.farmerName} ({biddingModalListing.locationDistrict})</p>
+                <p className="text-[#064e3b] font-black text-xs">{t.baselineFarmPrice || 'Baseline Farm Price'}: LKR {biddingModalListing.pricePerKg}/kg</p>
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Target Volume (Kg)</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.requestedQtyLabel || 'Target Volume (Kg)'}</label>
                 <input
                   type="number"
                   min="1"
@@ -948,7 +948,7 @@ export default function BuyerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Offered Price per Kg (LKR)</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.offeredPriceLabel || 'Offered Price per Kg (LKR)'}</label>
                 <input
                   type="number"
                   min="1"
@@ -966,14 +966,14 @@ export default function BuyerPage() {
                     <Calculator className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-emerald-950 block">Total Offer Value / සම්පූර්ණ මුදල</span>
+                    <span className="text-xs font-bold text-emerald-950 block">{t.totalOfferValue || 'Total Offer Value'}</span>
                     <span className="text-[11px] text-emerald-700 font-medium">
                       {(targetQty || 0).toLocaleString()} Kg × LKR {(offeredPrice || 0).toLocaleString()}/kg
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">Estimated Total</span>
+                  <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">{t.estimatedTotal || 'Estimated Total'}</span>
                   <span className="text-lg font-black text-[#064e3b]">
                     LKR {((targetQty || 0) * (offeredPrice || 0)).toLocaleString()}
                   </span>
@@ -981,7 +981,7 @@ export default function BuyerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Requested Delivery Date</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.deliveryWindowLabel || 'Requested Delivery Date'}</label>
                 <input
                   type="date"
                   value={deliveryDate}
@@ -992,12 +992,12 @@ export default function BuyerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Quote Note / Requirements</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.quoteNoteLabel || 'Quote Note / Requirements'}</label>
                 <textarea
                   rows={2}
                   value={quoteNote}
                   onChange={(e) => setQuoteNote(e.target.value)}
-                  placeholder="e.g. Require delivery to Welisara Central Warehouse before 08 AM..."
+                  placeholder={t.quoteNotePlaceholder || 'e.g. Require delivery to Welisara Central Warehouse before 08 AM...'}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none"
                 ></textarea>
               </div>
@@ -1008,13 +1008,13 @@ export default function BuyerPage() {
                   onClick={() => setBiddingModalListing(null)}
                   className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel || 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
                 >
-                  Submit Quote Offer
+                  {t.submitQuoteBtn || 'Submit Quote Offer'}
                 </button>
               </div>
             </form>
@@ -1027,7 +1027,7 @@ export default function BuyerPage() {
         <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200">
             <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">Propose Counter Quote to Farmer</h3>
+              <h3 className="font-bold text-slate-900 text-sm">{t.proposeCounterTitle || 'Propose Counter Quote to Farmer'}</h3>
               <button onClick={() => setSelectedOfferForCounter(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
@@ -1036,11 +1036,11 @@ export default function BuyerPage() {
             <form onSubmit={handleSendCounterOfferSubmit} className="p-5 space-y-4 text-xs">
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
                 <span className="text-slate-500 font-bold block">{selectedOfferForCounter.produceTitle}</span>
-                <span className="text-slate-700 font-medium block">Seller: {selectedOfferForCounter.farmerName}</span>
+                <span className="text-slate-700 font-medium block">{t.modalSellerLabel || 'Seller'}: {selectedOfferForCounter.farmerName}</span>
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Counter Price per Kg (LKR)</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.offeredPriceLabel || 'Counter Price per Kg (LKR)'}</label>
                 <input
                   type="number"
                   min="1"
@@ -1052,7 +1052,7 @@ export default function BuyerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Target Quantity (Kg)</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.requestedQtyLabel || 'Target Quantity (Kg)'}</label>
                 <input
                   type="number"
                   min="1"
@@ -1070,14 +1070,14 @@ export default function BuyerPage() {
                     <Calculator className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-blue-950 block">Total Counter Value / සම්පූර්ණ මුදල</span>
+                    <span className="text-xs font-bold text-blue-950 block">{t.totalCounterValue || 'Total Counter Value'}</span>
                     <span className="text-[11px] text-blue-700 font-medium">
                       {(counterQty || 0).toLocaleString()} Kg × LKR {(counterPrice || 0).toLocaleString()}/kg
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-blue-800 font-bold uppercase tracking-wider block">Estimated Total</span>
+                  <span className="text-[10px] text-blue-800 font-bold uppercase tracking-wider block">{t.estimatedTotal || 'Estimated Total'}</span>
                   <span className="text-lg font-black text-blue-700">
                     LKR {((counterQty || 0) * (counterPrice || 0)).toLocaleString()}
                   </span>
@@ -1085,12 +1085,12 @@ export default function BuyerPage() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Message Note</label>
+                <label className="text-slate-700 font-semibold block mb-1">{t.messageNoteLabel || 'Message Note'}</label>
                 <textarea
                   rows={2}
                   value={counterNote}
                   onChange={(e) => setCounterNote(e.target.value)}
-                  placeholder="Mention delivery window or packaging..."
+                  placeholder={t.messageNotePlaceholder || 'Mention delivery window or packaging...'}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none"
                 ></textarea>
               </div>
@@ -1101,13 +1101,13 @@ export default function BuyerPage() {
                   onClick={() => setSelectedOfferForCounter(null)}
                   className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel || 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl shadow-xs cursor-pointer"
                 >
-                  Send Counter Quote
+                  {t.sendCounterOffer || 'Send Counter Quote'}
                 </button>
               </div>
             </form>
