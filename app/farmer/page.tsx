@@ -1103,7 +1103,7 @@ export default function FarmerPage() {
               <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-xl p-3 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <Calculator className="w-4 h-4 text-[#064e3b]" />
-                  <span className="font-semibold text-slate-700">Estimated Total Batch Value / මුළු වටිනාකම:</span>
+                  <span className="font-semibold text-slate-700">{t.estimatedBatchValue || 'Estimated Total Batch Value'}:</span>
                   <span className="text-[11px] text-slate-500">
                     ({(quantityKg || 0).toLocaleString()} Kg × LKR {(pricePerKg || 0).toLocaleString()})
                   </span>
@@ -1332,14 +1332,14 @@ export default function FarmerPage() {
                     <Calculator className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-emerald-950 block">Total Counter Value / සම්පූර්ණ මුදල</span>
+                    <span className="text-xs font-bold text-emerald-950 block">{t.totalCounterValue || 'Total Counter Value'}</span>
                     <span className="text-[11px] text-emerald-700 font-medium">
                       {(counterQty || 0).toLocaleString()} Kg × LKR {(counterPrice || 0).toLocaleString()}/kg
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">Estimated Total</span>
+                  <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">{t.estimatedTotal || 'Estimated Total'}</span>
                   <span className="text-lg font-black text-[#064e3b]">
                     LKR {((counterQty || 0) * (counterPrice || 0)).toLocaleString()}
                   </span>
