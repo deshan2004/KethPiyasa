@@ -6,10 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "translate": "node scripts/auto-translate.mjs"
   },
   "dependencies": {
+    "@types/leaflet": "^1.9.22",
     "firebase": "^12.19.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.33.0",
     "next": "^16.3.2",
     "qrcode.react": "^4.2.0",

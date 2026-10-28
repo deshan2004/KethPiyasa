@@ -63,7 +63,7 @@ const initialListings: ProduceListing[] = [
     farmerNic: '781920394V',
     farmerPhone: '+94 77 123 4567',
     isPreHarvest: false,
-    photos: ['https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=600&auto=format&fit=crop&q=80'],
+    photos: ['/leeks.jpg'],
     organicCertified: true,
     moistureContent: '12% Optimal',
     minOrderQtyKg: 500,
@@ -86,7 +86,7 @@ const initialListings: ProduceListing[] = [
     farmerNic: '840192837V',
     farmerPhone: '+94 71 987 6543',
     isPreHarvest: true,
-    photos: ['https://images.unsplash.com/photo-1447175008436-0841719b8b80?w=600&auto=format&fit=crop&q=80'],
+    photos: ['/carrot.jpg'],
     organicCertified: false,
     moistureContent: '14% Fresh',
     minOrderQtyKg: 1000,
@@ -109,7 +109,7 @@ const initialListings: ProduceListing[] = [
     farmerNic: '692810394V',
     farmerPhone: '+94 76 555 1212',
     isPreHarvest: true,
-    photos: ['https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=600&auto=format&fit=crop&q=80'],
+    photos: ['/samba.jpg'],
     organicCertified: true,
     moistureContent: '11% Dry Harvest',
     minOrderQtyKg: 2000,
@@ -132,7 +132,7 @@ const initialListings: ProduceListing[] = [
     farmerNic: '891029384V',
     farmerPhone: '+94 70 333 4455',
     isPreHarvest: false,
-    photos: ['https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=600&auto=format&fit=crop&q=80'],
+    photos: ['/chili.jpg'],
     organicCertified: false,
     moistureContent: 'Standard',
     minOrderQtyKg: 250,
@@ -155,7 +155,7 @@ const initialListings: ProduceListing[] = [
     farmerNic: '912039485V',
     farmerPhone: '+94 77 444 8899',
     isPreHarvest: false,
-    photos: ['https://images.unsplash.com/photo-1618512496248-a07fe83aa8cf?w=600&auto=format&fit=crop&q=80'],
+    photos: ['/onion.jpg'],
     organicCertified: true,
     moistureContent: 'Sun Cured',
     minOrderQtyKg: 500,
@@ -318,16 +318,100 @@ const initialUser: UserProfile = {
   verified: true,
 };
 
+const getLocalFallbackImage = (cropType?: string) => {
+  const crop = (cropType || '').toLowerCase();
+  if (crop.includes('chili')) return '/chili.jpg';
+  if (crop.includes('tomato')) return '/tomato.jpeg';
+  if (crop.includes('carrot')) return '/carrot.jpg';
+  if (crop.includes('onion')) return '/onion.jpg';
+  if (crop.includes('paddy') || crop.includes('samba')) return '/samba.jpg';
+  if (crop.includes('leek')) return '/leeks.jpg';
+  return '/leeks.jpg';
+};
+
+const normalizePhotoPath = (photo?: string, cropType?: string) => {
+  const cropFallback = getLocalFallbackImage(cropType);
+
+  if (!photo) return cropFallback;
+
+  const normalized = photo.trim();
+  if (!normalized) return cropFallback;
+
+  if (normalized.includes('chill.jpg') || normalized.includes('chill')) return '/chili.jpg';
+  if (normalized.includes('carrot.jpg')) return '/carrot.jpg';
+  if (normalized.includes('samba.jpg')) return '/samba.jpg';
+  if (normalized.includes('onion.jpg')) return '/onion.jpg';
+  if (normalized.includes('leeks.jpg')) return '/leeks.jpg';
+  if (normalized.includes('chili.jpg')) return '/chili.jpg';
+  if (normalized.includes('tomato.jpeg') || normalized.includes('tomato')) return cropFallback;
+
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+    return cropFallback;
+  }
+
+  return normalized;
+};
+
+const sanitizeSavedListings = (savedListings: ProduceListing[] = []) =>
+  savedListings.map((listing) => ({
+    ...listing,
+    photos: Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos.map((photo) => normalizePhotoPath(photo, listing.cropType)) : [getLocalFallbackImage(listing.cropType)],
+  }));
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [role, setRole] = useState<UserRole>('buyer');
-  const [lang, setLang] = useState<Language>('en');
+  const [lang, setLangState] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      const match = document.cookie.match(/googtrans=\/en\/([a-z]+)/);
+      if (match && (match[1] === 'si' || match[1] === 'ta' || match[1] === 'en')) {
+        return match[1] as Language;
+      }
+      const saved = localStorage.getItem('kp_lang') as Language;
+      if (saved && (saved === 'en' || saved === 'si' || saved === 'ta')) {
+        return saved;
+      }
+    }
+    return 'en';
+  });
+
+  const setLang = (newLang: Language) => {
+    setLangState(newLang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kp_lang', newLang);
+
+      const hostname = window.location.hostname;
+      if (newLang === 'en') {
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${hostname}; path=/;`;
+        document.cookie = 'googtrans=/en/en; path=/;';
+      } else {
+        document.cookie = `googtrans=/en/${newLang}; path=/;`;
+        document.cookie = `googtrans=/en/${newLang}; domain=.${hostname}; path=/;`;
+      }
+
+      const combo = document.querySelector<HTMLSelectElement>('.goog-te-combo');
+      if (combo) {
+        combo.value = newLang;
+        combo.dispatchEvent(new Event('change'));
+      } else {
+        window.location.reload();
+      }
+    }
+  };
   const [listings, setListings] = useState<ProduceListing[]>(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('kp_listings');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved) as ProduceListing[];
+          const sanitized = sanitizeSavedListings(parsed);
+          if (JSON.stringify(sanitized) !== saved) {
+            localStorage.setItem('kp_listings', JSON.stringify(sanitized));
+          }
+          return sanitized;
+        }
       } catch {}
     }
     return initialListings;
@@ -362,6 +446,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [marketPrices, setMarketPrices] = useState<MarketPriceIndicator[]>(initialMarketPrices);
   const [disputes, setDisputes] = useState<DisputeTicket[]>(initialDisputes);
   const [currentUser] = useState<UserProfile>(initialUser);
+
+  // Cross-tab real-time sync for localStorage changes
+  React.useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (!e.key) return;
+      try {
+        if (e.key === 'kp_listings' && e.newValue) {
+          const parsed = JSON.parse(e.newValue);
+          setListings(sanitizeSavedListings(parsed));
+        }
+        if (e.key === 'kp_offers' && e.newValue) {
+          setOffers(JSON.parse(e.newValue));
+        }
+        if (e.key === 'kp_contracts' && e.newValue) {
+          setContracts(JSON.parse(e.newValue));
+        }
+        if (e.key === 'kp_shipments' && e.newValue) {
+          setShipments(JSON.parse(e.newValue));
+        }
+      } catch (err) {
+        console.error('Failed to sync storage:', err);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const saveState = (key: string, data: unknown) => {
     try {

@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { ShipmentJob } from '@/lib/types';
 import { QrCode, CheckCircle2, ShieldCheck, X, Camera, PenTool } from 'lucide-react';
+import { useApp } from '@/lib/store';
+import { getTranslation } from '@/lib/i18n';
 
 interface QRScannerModalProps {
   shipment: ShipmentJob;
@@ -11,6 +13,9 @@ interface QRScannerModalProps {
 }
 
 export const QRScannerModal: React.FC<QRScannerModalProps> = ({ shipment, onVerify, onClose }) => {
+  const { lang } = useApp();
+  const t = getTranslation(lang);
+
   const [signatureName, setSignatureName] = useState('S. Wickramasinghe (Store Manager)');
   const [scanning, setScanning] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -33,7 +38,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ shipment, onVeri
         <div className="bg-slate-950 px-5 py-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <QrCode className="w-5 h-5 text-emerald-400" />
-            <h3 className="font-bold text-white text-sm">Delivery Verification & Signature</h3>
+            <h3 className="font-bold text-white text-sm">{t.qrScannerModalTitle}</h3>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-lg">
             <X className="w-5 h-5" />
@@ -47,9 +52,9 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ shipment, onVeri
               <div className="w-16 h-16 bg-emerald-950 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-700 shadow-xl shadow-emerald-950">
                 <CheckCircle2 className="w-10 h-10 animate-bounce" />
               </div>
-              <h4 className="text-base font-bold text-white">Delivery Confirmed!</h4>
+              <h4 className="text-base font-bold text-white">{t.deliveryConfirmed}</h4>
               <p className="text-slate-400">
-                QR signature verified successfully. Escrow funds have been released to the seller&apos;s bank account.
+                {t.deliveryConfirmedSub}
               </p>
               <div className="bg-emerald-950/60 p-2.5 rounded-lg border border-emerald-800/60 font-mono text-[11px] text-emerald-300">
                 STATUS: ESCROW_FUNDS_RELEASED
@@ -60,8 +65,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ shipment, onVeri
               {/* Shipment Info */}
               <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1">
                 <p className="font-bold text-white text-sm">{shipment.produceTitle}</p>
-                <p className="text-slate-400">Hauler: {shipment.haulerName} • {shipment.driverName}</p>
-                <p className="text-slate-400">Destination: {shipment.destinationHub}</p>
+                <p className="text-slate-400">{t.driver}: {shipment.haulerName} • {shipment.driverName}</p>
+                <p className="text-slate-400">{t.destination}: {shipment.destinationHub}</p>
               </div>
 
               {/* QR Scanner Simulation Area */}
@@ -74,15 +79,15 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ shipment, onVeri
                 </div>
 
                 <div>
-                  <p className="font-semibold text-slate-200">Scan Receiver QR Code</p>
-                  <p className="text-[11px] text-slate-400">Position camera over buyer&apos;s invoice QR code</p>
+                  <p className="font-semibold text-slate-200">{t.scanReceiverQr}</p>
+                  <p className="text-[11px] text-slate-400">{t.positionCamera}</p>
                 </div>
               </div>
 
               {/* Digital Signature Confirmation */}
               <div className="space-y-1.5">
                 <label className="text-slate-400 font-medium flex items-center gap-1">
-                  <PenTool className="w-3.5 h-3.5 text-amber-400" /> Receiver Digital Signature / Name
+                  <PenTool className="w-3.5 h-3.5 text-amber-400" /> {t.receiverSignature}
                 </label>
                 <input
                   type="text"
@@ -99,10 +104,10 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ shipment, onVeri
                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
               >
                 {scanning ? (
-                  <span>Verifying QR Signature...</span>
+                  <span>{t.verifyingQr}</span>
                 ) : (
                   <>
-                    <Camera className="w-4 h-4" /> Scan & Confirm Drop-Off
+                    <Camera className="w-4 h-4" /> {t.scanConfirmBtn}
                   </>
                 )}
               </button>

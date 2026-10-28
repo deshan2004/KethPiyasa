@@ -1,35 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ProduceListing, ShipmentJob } from '@/lib/types';
 import { 
   MapPin, 
-  Navigation, 
   Truck, 
   Layers, 
   ZoomIn, 
   ZoomOut, 
   Compass, 
   Info, 
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  CheckCircle2,
-  Clock
+  ArrowRight, 
+  ShieldCheck, 
+  Globe,
+  Sparkles,
+  ExternalLink,
+  RotateCcw
 } from 'lucide-react';
 
-interface SriLankaMapProps {
+export interface SriLankaMapProps {
   listings?: ProduceListing[];
   activeShipment?: ShipmentJob;
   onSelectListing?: (listing: ProduceListing) => void;
+  onFilterDistrict?: (district: string) => void;
 }
 
-interface MapHub {
+export interface MapHub {
   id: string;
   name: string;
   district: string;
-  x: number;
-  y: number;
+  lat: number;
+  lng: number;
   type: 'origin' | 'hub' | 'market';
   produce: string;
   availableKg: number;
@@ -37,282 +38,413 @@ interface MapHub {
   emoji: string;
 }
 
-export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeShipment, onSelectListing }) => {
-  const [selectedHubId, setSelectedHubId] = useState<string | null>('nuwara-eliya');
-  const [mapStyle, setMapStyle] = useState<'vector' | 'satellite' | 'routes'>('vector');
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
+// Real GPS Coordinates for Sri Lanka Agricultural Hubs & Markets
+export const hubs: MapHub[] = [
+  { id: 'dambulla', name: 'Dambulla Dedicated Economic Center', district: 'Dambulla', lat: 7.8731, lng: 80.6517, type: 'market', produce: 'National Vegetable Wholesale Center', availableKg: 85000, priceLkr: 110, emoji: '🏬' },
+  { id: 'nuwara-eliya', name: 'Nuwara Eliya Highlands', district: 'Nuwara Eliya', lat: 6.9497, lng: 80.7891, type: 'origin', produce: 'Export Grade Leeks, Carrots & Potatoes', availableKg: 28000, priceLkr: 135, emoji: '🥕' },
+  { id: 'keppetipola', name: 'Keppetipola Economic Center', district: 'Badulla', lat: 6.9022, lng: 80.9168, type: 'hub', produce: 'Beetroot, Cabbage & Beans', availableKg: 19500, priceLkr: 120, emoji: '🥬' },
+  { id: 'anuradhapura', name: 'Anuradhapura Grain Storage', district: 'Anuradhapura', lat: 8.3114, lng: 80.4037, type: 'origin', produce: 'Nadu & Samba Rice Paddy', availableKg: 45000, priceLkr: 140, emoji: '🌾' },
+  { id: 'polonnaruwa', name: 'Polonnaruwa Paddy Grid', district: 'Polonnaruwa', lat: 7.9403, lng: 81.0188, type: 'origin', produce: 'Keeri Samba Paddy', availableKg: 35000, priceLkr: 145, emoji: '🌾' },
+  { id: 'jaffna', name: 'Jaffna Agrarian Hub', district: 'Jaffna', lat: 9.6615, lng: 80.0255, type: 'origin', produce: 'Jaffna Red Onions & Bananas', availableKg: 12000, priceLkr: 280, emoji: '🧅' },
+  { id: 'trincomalee', name: 'Trincomalee Eastern Hub', district: 'Trincomalee', lat: 8.5874, lng: 81.2152, type: 'hub', produce: 'Corn, Cassava & Groundnut', availableKg: 18000, priceLkr: 190, emoji: '🌽' },
+  { id: 'colombo', name: 'Pettah Wholesale & Manning Market', district: 'Colombo', lat: 6.9360, lng: 79.8530, type: 'market', produce: 'Commercial Distribution & B2B Escrow Center', availableKg: 120000, priceLkr: 150, emoji: '🏢' },
+  { id: 'welisara', name: 'Welisara Logistics Hub', district: 'Gampaha', lat: 7.0080, lng: 79.8970, type: 'hub', produce: 'Refrigerated Cold Storage & Freight Logistics', availableKg: 50000, priceLkr: 0, emoji: '🚚' },
+  { id: 'monaragala', name: 'Monaragala Agri Zone', district: 'Monaragala', lat: 6.8726, lng: 81.3507, type: 'origin', produce: 'Green Chili & Maize', availableKg: 14000, priceLkr: 320, emoji: '🌶️' },
+];
 
-  // Accurate Google Maps Style Coordinate Pins for Sri Lanka Agricultural Hubs
-  const hubs: MapHub[] = [
-    { id: 'jaffna', name: 'Jaffna Agrarian Hub', district: 'Jaffna', x: 210, y: 70, type: 'origin', produce: 'Jaffna Red Onions & Bananas', availableKg: 12000, priceLkr: 280, emoji: '🧅' },
-    { id: 'anuradhapura', name: 'Anuradhapura Grain Storage', district: 'Anuradhapura', x: 225, y: 180, type: 'origin', produce: 'Nadu & Samba Rice Paddy', availableKg: 45000, priceLkr: 140, emoji: '🌾' },
-    { id: 'trincomalee', name: 'Trincomalee Eastern Hub', district: 'Trincomalee', x: 330, y: 175, type: 'hub', produce: 'Corn, Cassava & Groundnut', availableKg: 18000, priceLkr: 190, emoji: '🌽' },
-    { id: 'polonnaruwa', name: 'Polonnaruwa Paddy Grid', district: 'Polonnaruwa', x: 300, y: 225, type: 'origin', produce: 'Keeri Samba Paddy', availableKg: 35000, priceLkr: 145, emoji: '🌾' },
-    { id: 'dambulla', name: 'Dambulla Dedicated Economic Center', district: 'Dambulla', x: 245, y: 245, type: 'market', produce: 'National Vegetable Wholesale Center', availableKg: 85000, priceLkr: 110, emoji: '🏬' },
-    { id: 'nuwara-eliya', name: 'Nuwara Eliya Highlands', district: 'Nuwara Eliya', x: 255, y: 355, type: 'origin', produce: 'Export Grade Leeks, Carrots & Potatoes', availableKg: 28000, priceLkr: 135, emoji: '🥕' },
-    { id: 'keppetipola', name: 'Keppetipola Economic Center', district: 'Badulla', x: 295, y: 350, type: 'hub', produce: 'Beetroot, Cabbage & Beans', availableKg: 19500, priceLkr: 120, emoji: '🥬' },
-    { id: 'monaragala', name: 'Monaragala Agri Zone', district: 'Monaragala', x: 330, y: 405, type: 'origin', produce: 'Green Chili & Maize', availableKg: 14000, priceLkr: 320, emoji: '🌶️' },
-    { id: 'colombo', name: 'Pettah Wholesale & Manning Market', district: 'Colombo', x: 155, y: 380, type: 'market', produce: 'Commercial Distribution & B2B Escrow Center', availableKg: 120000, priceLkr: 150, emoji: '🏢' },
-    { id: 'welisara', name: 'Welisara Logistics Hub', district: 'Gampaha', x: 160, y: 360, type: 'hub', produce: 'Refrigerated Cold Storage & Freight Logistics', availableKg: 50000, priceLkr: 0, emoji: '🚚' },
-  ];
+// 100% Free OpenStreetMap & Satellite Tile Providers
+const getTileUrlAndAttribution = (style: 'osm' | 'satellite' | 'terrain') => {
+  switch (style) {
+    case 'satellite':
+      return {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attribution: '&copy; Esri World Imagery &mdash; Source: Esri, Maxar, Earthstar Geographics'
+      };
+    case 'terrain':
+      return {
+        url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        attribution: 'Map data &copy; OpenStreetMap contributors, SRTM | Map style &copy; OpenTopoMap'
+      };
+    case 'osm':
+    default:
+      return {
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
+      };
+  }
+};
 
-  const selectedHub = hubs.find((h) => h.id === selectedHubId) || hubs[5];
+export const SriLankaMap: React.FC<SriLankaMapProps> = ({ 
+  listings = [], 
+  activeShipment, 
+  onSelectListing,
+  onFilterDistrict 
+}) => {
+  const [selectedHubId, setSelectedHubId] = useState<string>('dambulla');
+  const [mapStyle, setMapStyle] = useState<'osm' | 'satellite' | 'terrain'>('osm');
 
-  // Highway Polyline Path Coordinates (Google Maps style highways)
-  const A9_Highway = "M 155 380 L 195 290 L 245 245 L 225 180 L 210 70"; // A9 Colombo -> Dambulla -> Anuradhapura -> Jaffna
-  const A1_A5_Highway = "M 155 380 L 245 320 L 255 355 L 295 350"; // A1/A5 Colombo -> Kandy -> Nuwara Eliya -> Keppetipola
-  const Southern_Expressway = "M 155 380 L 175 470 L 220 500 L 295 475"; // E01 Colombo -> Galle -> Hambantota
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const tileLayerRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+  const polylinesRef = useRef<any[]>([]);
+
+  const selectedHub = hubs.find((h) => h.id === selectedHubId) || hubs[0];
+
+  // Helper to match produce listings to a hub
+  const getMatchingListings = (hub: MapHub) => {
+    const h = hub.district.toLowerCase();
+    const hubName = hub.name.toLowerCase();
+    return listings.filter((l) => {
+      const d = l.locationDistrict.toLowerCase();
+      const lHub = l.locationHub.toLowerCase();
+      return (
+        d.includes(h) ||
+        lHub.includes(h) ||
+        hubName.includes(d) ||
+        (h.includes('dambulla') && (d.includes('matale') || lHub.includes('dambulla'))) ||
+        (h.includes('colombo') && (d.includes('colombo') || d.includes('gampaha'))) ||
+        (h.includes('nuwara') && d.includes('nuwara'))
+      );
+    });
+  };
+
+  const matchingListings = getMatchingListings(selectedHub);
+
+  // Initialize Leaflet OpenStreetMap
+  useEffect(() => {
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
+
+    let L: any;
+    try {
+      L = require('leaflet');
+    } catch (e) {
+      console.error('Leaflet failed to load:', e);
+      return;
+    }
+
+    // Centered on Sri Lanka with bounds covering whole island
+    const map = L.map(mapContainerRef.current, {
+      center: [7.8731, 80.6517],
+      zoom: 8,
+      minZoom: 7,
+      maxZoom: 18,
+      zoomControl: false,
+      attributionControl: false,
+    });
+
+    // Default to OpenStreetMap Standard
+    const { url, attribution } = getTileUrlAndAttribution('osm');
+    const initialTileLayer = L.tileLayer(url, { 
+      attribution, 
+      maxZoom: 19,
+      crossOrigin: true 
+    }).addTo(map);
+    tileLayerRef.current = initialTileLayer;
+
+    // Add Attribution at bottom right
+    L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
+
+    mapInstanceRef.current = map;
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update Tile Layer when mapStyle changes
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const L = require('leaflet');
+    const { url, attribution } = getTileUrlAndAttribution(mapStyle);
+
+    if (tileLayerRef.current) {
+      mapInstanceRef.current.removeLayer(tileLayerRef.current);
+    }
+    const newTileLayer = L.tileLayer(url, { 
+      attribution, 
+      maxZoom: 19,
+      crossOrigin: true 
+    }).addTo(mapInstanceRef.current);
+    tileLayerRef.current = newTileLayer;
+  }, [mapStyle]);
+
+  // Render Markers and Freight Corridors Polylines
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const L = require('leaflet');
+
+    // Clear existing markers & polylines
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+
+    polylinesRef.current.forEach((p) => p.remove());
+    polylinesRef.current = [];
+
+    // Render Highway Freight Corridors (A9, A1/A5, Southern Expressway)
+    const A9_Polyline = [[6.9360, 79.8530], [7.2906, 80.6337], [7.8731, 80.6517], [8.3114, 80.4037], [9.6615, 80.0255]];
+    const A1_A5_Polyline = [[6.9360, 79.8530], [7.2906, 80.6337], [6.9497, 80.7891], [6.9022, 80.9168]];
+    const Southern_Polyline = [[6.9360, 79.8530], [6.0535, 80.2210], [6.1241, 81.1185]];
+
+    const polyOptions = {
+      osm: { color: '#059669', weight: 3.5, opacity: 0.85, dashArray: '6, 6' },
+      satellite: { color: '#38bdf8', weight: 3.5, opacity: 0.9 },
+      terrain: { color: '#d97706', weight: 4, opacity: 0.9 },
+    }[mapStyle];
+
+    const poly1 = L.polyline(A9_Polyline, polyOptions).addTo(mapInstanceRef.current);
+    const poly2 = L.polyline(A1_A5_Polyline, polyOptions).addTo(mapInstanceRef.current);
+    const poly3 = L.polyline(Southern_Polyline, polyOptions).addTo(mapInstanceRef.current);
+
+    polylinesRef.current.push(poly1, poly2, poly3);
+
+    // Active Shipment Route
+    if (activeShipment) {
+      const activeRouteCoords = [[6.9497, 80.7891], [7.8731, 80.6517], [6.9360, 79.8530]];
+      const activePoly = L.polyline(activeRouteCoords, {
+        color: '#0284c7',
+        weight: 5,
+        opacity: 0.95,
+        dashArray: '8, 8'
+      }).addTo(mapInstanceRef.current);
+      polylinesRef.current.push(activePoly);
+
+      // Active Truck Marker
+      const truckIcon = L.divIcon({
+        className: 'custom-leaflet-marker',
+        html: `<div style="background:#0284c7; color:#fff; width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:2px solid #fff; box-shadow:0 0 16px rgba(2,132,199,0.9); font-size:16px;">🚚</div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+      });
+      const truckMarker = L.marker([7.4, 80.2], { icon: truckIcon }).addTo(mapInstanceRef.current);
+      truckMarker.bindPopup(`
+        <div style="font-family:sans-serif; padding:4px;">
+          <b style="color:#0284c7;">🚚 Active Dispatch: ${activeShipment.id}</b><br/>
+          <span style="font-size:12px; color:#334155;">${activeShipment.produceTitle}</span><br/>
+          <span style="font-size:11px; color:#64748b;">Vehicle: ${activeShipment.haulerVehicle}</span>
+        </div>
+      `);
+      markersRef.current.push(truckMarker);
+    }
+
+    // Render Interactive Hub Pins with OpenStreetMap Popup
+    hubs.forEach((hub) => {
+      const isSelected = selectedHubId === hub.id;
+      const markerColor = isSelected 
+        ? '#059669' 
+        : hub.type === 'market' 
+          ? '#d97706' 
+          : hub.type === 'hub' 
+            ? '#0284c7' 
+            : '#047857';
+
+      const customIcon = L.divIcon({
+        className: 'custom-leaflet-marker',
+        html: `
+          <div style="display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%); cursor:pointer;">
+            <div style="background:${markerColor}; color:#fff; border:${isSelected ? '3px solid #34d399' : '2px solid #ffffff'}; border-radius:50%; width:${isSelected ? '38px' : '32px'}; height:${isSelected ? '38px' : '32px'}; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:${isSelected ? '18px' : '15px'}; transition:all 0.2s;">
+              <span>${hub.emoji}</span>
+            </div>
+            <div style="background:${isSelected ? '#064e3b' : '#0f172a'}; color:#ffffff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; border:1px solid ${isSelected ? '#34d399' : '#334155'}; margin-top:2px; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.4);">
+              ${hub.name.split(' ')[0]}
+            </div>
+          </div>
+        `,
+        iconSize: [38, 48],
+        iconAnchor: [19, 48],
+      });
+
+      const marker = L.marker([hub.lat, hub.lng], { icon: customIcon }).addTo(mapInstanceRef.current);
+
+      marker.bindPopup(`
+        <div style="font-family:sans-serif; min-width:180px; padding:4px;">
+          <div style="font-size:14px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:6px;">
+            <span>${hub.emoji}</span> <span>${hub.name}</span>
+          </div>
+          <div style="font-size:11px; color:#059669; font-weight:700; margin-top:2px;">
+            📍 ${hub.district} District
+          </div>
+          <div style="font-size:12px; color:#475569; margin-top:4px;">
+            <b>Crop:</b> ${hub.produce}
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-top:2px;">
+            Stock: <b>${hub.availableKg.toLocaleString()} Kg</b> ${hub.priceLkr > 0 ? `• LKR ${hub.priceLkr}/Kg` : ''}
+          </div>
+        </div>
+      `);
+
+      marker.on('click', () => {
+        setSelectedHubId(hub.id);
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.flyTo([hub.lat, hub.lng], 9, { animate: true, duration: 0.8 });
+        }
+      });
+
+      markersRef.current.push(marker);
+    });
+  }, [mapStyle, selectedHubId, activeShipment]);
+
+  // Zoom Handlers
+  const handleZoomIn = () => {
+    if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();
+  };
+
+  const handleZoomOut = () => {
+    if (mapInstanceRef.current) mapInstanceRef.current.zoomOut();
+  };
+
+  const handleResetView = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([7.8731, 80.6517], 8, { animate: true, duration: 0.8 });
+    }
+  };
+
+  const handleSelectHub = (hub: MapHub) => {
+    setSelectedHubId(hub.id);
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([hub.lat, hub.lng], 9, { animate: true, duration: 0.8 });
+    }
+  };
+
+  const handleFilterClick = () => {
+    if (onFilterDistrict) {
+      onFilterDistrict(selectedHub.district);
+    }
+    if (matchingListings.length > 0 && onSelectListing) {
+      onSelectListing(matchingListings[0]);
+    }
+    const el = document.getElementById('active-listings');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="bg-slate-950 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden text-slate-100">
-      {/* Top Google Maps Header Control Bar */}
+      {/* Top Map Header Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800/80">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center shadow-lg text-emerald-400">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center shadow-lg text-emerald-400 shrink-0">
             <Compass className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">Sri Lanka Agri Grid & Logistics Map</h3>
-              <span className="text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Live GPS Vector
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">Sri Lanka OpenStreetMap Agri Grid</h3>
+              <span className="text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+                <Globe className="w-3 h-3 text-emerald-400" /> Live OpenStreetMap (OSM)
               </span>
             </div>
-            <p className="text-xs text-slate-400">Interactive Produce Stock Pins, Highway Networks & Real-time Freight Checkpoints</p>
+            <p className="text-xs text-slate-400">Open-source real-time GPS coordinates for Sri Lankan Wholesale Markets, Farms & Logistics Corridors</p>
           </div>
         </div>
 
         {/* Map View Mode Controls */}
-        <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+        <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
           <button
-            onClick={() => setMapStyle('vector')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
-              mapStyle === 'vector' ? 'bg-[#064e3b] text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            onClick={() => setMapStyle('osm')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+              mapStyle === 'osm' ? 'bg-[#064e3b] text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
+            title="OpenStreetMap Standard Street Layer"
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Dark Vector</span>
+            <Globe className="w-3.5 h-3.5" />
+            <span>OpenStreetMap</span>
           </button>
           <button
             onClick={() => setMapStyle('satellite')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
               mapStyle === 'satellite' ? 'bg-sky-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
+            title="Satellite Aerial Imagery"
           >
-            <span>Satellite Hybrid</span>
+            <Layers className="w-3.5 h-3.5" />
+            <span>Satellite</span>
           </button>
           <button
-            onClick={() => setMapStyle('routes')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
-              mapStyle === 'routes' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            onClick={() => setMapStyle('terrain')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+              mapStyle === 'terrain' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
+            title="Topographical Mountain Terrain"
           >
-            <Truck className="w-3.5 h-3.5" />
-            <span>Freight Corridors</span>
+            <span>Topography</span>
           </button>
         </div>
       </div>
 
+      {/* Quick Hub Navigation Chips Bar */}
+      <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+        <span className="text-slate-400 font-bold shrink-0 text-[11px] uppercase tracking-wider flex items-center gap-1">
+          <Sparkles className="w-3 h-3 text-amber-400" /> Quick Jump:
+        </span>
+        {hubs.map((hub) => (
+          <button
+            key={hub.id}
+            onClick={() => handleSelectHub(hub)}
+            className={`px-3 py-1.5 rounded-full shrink-0 font-bold transition-all flex items-center gap-1.5 cursor-pointer border text-xs ${
+              selectedHubId === hub.id 
+                ? 'bg-[#064e3b] text-white border-emerald-400 shadow-sm scale-105' 
+                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <span>{hub.emoji}</span>
+            <span>{hub.name.split(' ')[0]}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Main Map Viewport */}
-        <div className="lg:col-span-8 relative bg-[#0a1120] rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-center min-h-[460px] sm:min-h-[520px] shadow-inner">
+        <div className="lg:col-span-8 relative rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-center min-h-[460px] sm:min-h-[520px] shadow-inner bg-slate-900">
           
-          {/* Map Grid Pattern / Water Background */}
-          <div 
-            className="absolute inset-0 opacity-20 pointer-events-none"
-            style={{
-              backgroundImage: mapStyle === 'satellite'
-                ? 'radial-gradient(#1e293b 1px, transparent 1px)'
-                : 'linear-gradient(to right, #1e293b 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)',
-              backgroundSize: '30px 30px'
-            }}
-          />
+          {/* Leaflet OpenStreetMap Container */}
+          <div ref={mapContainerRef} className="w-full h-full min-h-[460px] sm:min-h-[520px] z-0" />
 
-          {/* Compass Rose & Scale Indicator overlay */}
-          <div className="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] font-bold text-slate-300 flex items-center gap-2 shadow-md">
-            <span className="text-emerald-400 font-mono">N 🧭 7.8731° N, 80.7718° E</span>
+          {/* Location Badge Overlay */}
+          <div className="absolute top-4 left-4 z-10 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] font-bold text-slate-300 flex items-center gap-2 shadow-md pointer-events-none">
+            <span className="text-emerald-400 font-mono">📍 {selectedHub.lat.toFixed(4)}° N, {selectedHub.lng.toFixed(4)}° E</span>
             <span className="text-slate-600">|</span>
-            <span>Scale: 1 : 50 km</span>
+            <span className="text-white">{selectedHub.name.split(' ')[0]} Hub</span>
           </div>
 
-          {/* Map Zoom Floating Controls */}
-          <div className="absolute top-4 right-4 z-10 flex flex-col gap-1">
+          {/* Floating Zoom & Reset Controls */}
+          <div className="absolute top-4 right-4 z-10 flex flex-col gap-1.5">
             <button
-              onClick={() => setZoomLevel((z) => Math.min(z + 0.15, 1.4))}
-              className="w-8 h-8 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center shadow-md active:scale-95 transition-all"
+              onClick={handleZoomIn}
+              className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center shadow-lg active:scale-95 transition-all cursor-pointer"
               title="Zoom In"
             >
               <ZoomIn className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setZoomLevel((z) => Math.max(z - 0.15, 0.85))}
-              className="w-8 h-8 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center shadow-md active:scale-95 transition-all"
+              onClick={handleZoomOut}
+              className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center shadow-lg active:scale-95 transition-all cursor-pointer"
               title="Zoom Out"
             >
               <ZoomOut className="w-4 h-4" />
             </button>
-          </div>
-
-          {/* SVG Detailed Vector Map */}
-          <div className="relative w-full h-full flex items-center justify-center p-2 sm:p-4 overflow-hidden">
-            <svg
-              viewBox="0 0 500 560"
-              className="w-full h-auto max-h-[500px] transition-transform duration-300 ease-out"
-              style={{ transform: `scale(${zoomLevel})` }}
+            <button
+              onClick={handleResetView}
+              className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center shadow-lg active:scale-95 transition-all cursor-pointer"
+              title="Reset View to Whole Sri Lanka"
             >
-              <defs>
-                {/* Land Terrain Gradient */}
-                <linearGradient id="sriLankaTerrain" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={mapStyle === 'satellite' ? '#142338' : '#0c221a'} />
-                  <stop offset="50%" stopColor={mapStyle === 'satellite' ? '#0f1d30' : '#063628'} />
-                  <stop offset="100%" stopColor={mapStyle === 'satellite' ? '#1e293b' : '#04271d'} />
-                </linearGradient>
-
-                {/* Ocean Coastline Glow Filter */}
-                <filter id="coastGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="8" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-
-                {/* Pin Pulse Glow */}
-                <radialGradient id="pinPulse" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                </radialGradient>
-              </defs>
-
-              {/* Indian Ocean Backdrop Water Effect */}
-              <path
-                d="M 0 0 L 500 0 L 500 560 L 0 560 Z"
-                fill={mapStyle === 'satellite' ? '#060d19' : '#050c18'}
-              />
-
-              {/* Realistic Sri Lanka Island Vector Polygon Contour */}
-              <g filter="url(#coastGlow)">
-                {/* Outer Glow Halo */}
-                <path
-                  d="M 215,35 C 225,40 235,50 235,65 C 235,75 220,80 205,85 C 195,88 185,82 175,80 C 165,85 155,100 155,115 C 165,135 150,180 145,230 C 140,260 135,300 140,340 C 145,370 148,390 155,410 C 160,430 165,450 170,470 C 175,490 185,510 205,520 C 225,530 250,525 275,510 C 305,490 335,470 355,445 C 375,420 380,390 375,360 C 370,330 365,300 365,270 C 365,240 375,220 375,195 C 375,175 355,160 340,150 C 325,140 305,135 295,120 C 285,105 270,85 255,70 C 240,55 225,45 215,35 Z"
-                  fill="none"
-                  stroke="#10b981"
-                  strokeWidth="6"
-                  strokeOpacity="0.25"
-                />
-
-                {/* Main Island Landmass */}
-                <path
-                  d="M 215,35 C 225,40 235,50 235,65 C 235,75 220,80 205,85 C 195,88 185,82 175,80 C 165,85 155,100 155,115 C 165,135 150,180 145,230 C 140,260 135,300 140,340 C 145,370 148,390 155,410 C 160,430 165,450 170,470 C 175,490 185,510 205,520 C 225,530 250,525 275,510 C 305,490 335,470 355,445 C 375,420 380,390 375,360 C 370,330 365,300 365,270 C 365,240 375,220 375,195 C 375,175 355,160 340,150 C 325,140 305,135 295,120 C 285,105 270,85 255,70 C 240,55 225,45 215,35 Z"
-                  fill="url(#sriLankaTerrain)"
-                  stroke="#059669"
-                  strokeWidth="2"
-                />
-              </g>
-
-              {/* National Major Highways (Google Maps Arterial Roads) */}
-              <g strokeLinecap="round" opacity={mapStyle === 'satellite' ? 0.7 : 0.85}>
-                {/* A9 Highway */}
-                <path d={A9_Highway} fill="none" stroke="#0284c7" strokeWidth="2.5" strokeDasharray="5 3" />
-                {/* A1 / A5 Highlands Highway */}
-                <path d={A1_A5_Highway} fill="none" stroke="#f59e0b" strokeWidth="2.5" />
-                {/* E01 Southern Expressway */}
-                <path d={Southern_Expressway} fill="none" stroke="#10b981" strokeWidth="2.5" strokeDasharray="6 2" />
-              </g>
-
-              {/* Live Active Shipment Truck Route Overlay */}
-              {activeShipment && (
-                <g>
-                  <path
-                    d="M 255 355 L 245 245 L 160 360"
-                    fill="none"
-                    stroke="#38bdf8"
-                    strokeWidth="4"
-                    strokeDasharray="8 4"
-                    className="animate-pulse"
-                  />
-                  {/* Moving Cargo Truck Marker */}
-                  <g transform="translate(202, 302)">
-                    <circle r="16" fill="#0284c7" opacity="0.4" className="animate-ping" />
-                    <circle r="12" fill="#0369a1" stroke="#ffffff" strokeWidth="2" />
-                    <text x="-6" y="4" fill="#ffffff" fontSize="11" fontWeight="bold">🚚</text>
-                  </g>
-                </g>
-              )}
-
-              {/* Render Google Maps Style Pin Markers */}
-              {hubs.map((hub) => {
-                const isSelected = selectedHubId === hub.id;
-                return (
-                  <g
-                    key={hub.id}
-                    transform={`translate(${hub.x}, ${hub.y})`}
-                    className="cursor-pointer group"
-                    onClick={() => setSelectedHubId(hub.id)}
-                  >
-                    {/* Pulsing Radar Ring */}
-                    <circle
-                      r={isSelected ? 18 : 12}
-                      fill="url(#pinPulse)"
-                      className="transition-all duration-300 group-hover:scale-150"
-                    />
-
-                    {/* Google Maps Style Teardrop Marker Pin */}
-                    <g transform="translate(0, -14)">
-                      <path
-                        d="M 0,-14 C -8,-14 -14,-8 -14,0 C -14,10 0,22 0,22 C 0,22 14,10 14,0 C 14,-8 8,-14 0,-14 Z"
-                        fill={isSelected ? '#059669' : hub.type === 'market' ? '#d97706' : hub.type === 'hub' ? '#0284c7' : '#047857'}
-                        stroke="#ffffff"
-                        strokeWidth="2"
-                        className="drop-shadow-md transition-transform group-hover:scale-110"
-                      />
-                      <text x="0" y="-1" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">
-                        {hub.emoji}
-                      </text>
-                    </g>
-
-                    {/* Map Pin City Name Tag */}
-                    <rect
-                      x="-40"
-                      y="12"
-                      width="80"
-                      height="16"
-                      rx="4"
-                      fill={isSelected ? '#064e3b' : '#0f172a'}
-                      stroke={isSelected ? '#34d399' : '#334155'}
-                      strokeWidth="1"
-                      className="shadow-md"
-                    />
-                    <text
-                      x="0"
-                      y="23"
-                      textAnchor="middle"
-                      fill={isSelected ? '#ffffff' : '#cbd5e1'}
-                      fontSize="9"
-                      fontWeight="bold"
-                      className="font-sans"
-                    >
-                      {hub.name.split(' ')[0]}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-
-            {/* Google Maps Watermark Logo */}
-            <div className="absolute bottom-3 left-4 z-10 text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 bg-slate-900/90 px-2.5 py-1 rounded-md border border-slate-800">
-              <span className="font-extrabold text-emerald-400">KethPiyasa GIS</span>
-              <span>• Powered by Sri Lanka Agrarian Grid</span>
-            </div>
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
-        {/* Google Maps Interactive Information Panel (Right Side) */}
+        {/* Interactive Information Panel (Right Side) */}
         <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
           
-          {/* Selected Location Info Card (Google Maps Inspector Box) */}
+          {/* Selected Location Info Card */}
           {selectedHub && (
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
               <div className="flex items-start justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#064e3b] text-white flex items-center justify-center text-xl shadow-md border border-emerald-500/50">
+                  <div className="w-11 h-11 rounded-2xl bg-[#064e3b] text-white flex items-center justify-center text-2xl shadow-md border border-emerald-500/50 shrink-0">
                     {selectedHub.emoji}
                   </div>
                   <div>
@@ -328,22 +460,22 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
                 </span>
               </div>
 
-              <div className="space-y-2 text-xs">
+              <div className="space-y-3 text-xs">
                 <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
-                  <span className="text-slate-400 block text-[11px]">Primary Produce Crop:</span>
+                  <span className="text-slate-400 block text-[11px] uppercase tracking-wide">Primary Produce Crop</span>
                   <span className="font-bold text-white text-sm block">{selectedHub.produce}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Stock Volume</span>
+                    <span className="text-slate-400 text-[10px] block uppercase tracking-wide">Stock Volume</span>
                     <span className="font-extrabold text-emerald-400 text-xs">
                       {selectedHub.availableKg.toLocaleString()} Kg
                     </span>
                   </div>
 
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span className="text-slate-400 text-[10px] block">Avg Market Rate</span>
+                    <span className="text-slate-400 text-[10px] block uppercase tracking-wide">Avg Market Rate</span>
                     <span className="font-extrabold text-amber-400 text-xs">
                       {selectedHub.priceLkr > 0 ? `LKR ${selectedHub.priceLkr}/Kg` : 'Logistics Hub'}
                     </span>
@@ -351,20 +483,38 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
                 </div>
               </div>
 
+              {/* Working Action Button with real matching count */}
               <button
-                onClick={() => {
-                  const matchingListing = listings.find((l) => l.locationDistrict.toLowerCase().includes(selectedHub.district.toLowerCase()));
-                  if (matchingListing && onSelectListing) {
-                    onSelectListing(matchingListing);
-                  }
-                }}
-                className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold py-2.5 rounded-xl shadow transition-all flex items-center justify-center gap-2 text-xs cursor-pointer active:scale-98"
+                onClick={handleFilterClick}
+                className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs cursor-pointer active:scale-98"
               >
-                <span>Filter Listings for {selectedHub.district}</span>
+                <span>
+                  {matchingListings.length > 0 
+                    ? `View ${matchingListings.length} Produce Batches in ${selectedHub.district}` 
+                    : `Filter Produce for ${selectedHub.district}`}
+                </span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           )}
+
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs text-slate-300 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200">Map Legend</span>
+              <Info className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-full px-2.5 py-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 block" /> Farm Origin
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-full px-2.5 py-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-500 block" /> Regional Hub
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-full px-2.5 py-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 block" /> Wholesale Center
+              </span>
+            </div>
+          </div>
 
           {/* Active Logistics Route Status or Quick Stats */}
           {activeShipment ? (
@@ -398,10 +548,10 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
             <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl text-xs space-y-2">
               <div className="flex items-center gap-2 text-emerald-400 font-bold">
                 <ShieldCheck className="w-4 h-4" />
-                <span>Verified Agricultural Grid</span>
+                <span>Verified Agricultural OpenStreetMap Grid</span>
               </div>
               <p className="text-slate-400 leading-relaxed text-[11px]">
-                Real-time GIS pins connect Nuwara Eliya, Dambulla, Keppetipola, and Colombo markets with zero broker markup.
+                Real-time OpenStreetMap GIS pins connect Nuwara Eliya, Dambulla, Keppetipola, and Colombo markets with zero broker markup.
               </p>
             </div>
           )}
