@@ -1023,5 +1023,13 @@ export const i18n = {
 };
 
 export function getTranslation(lang: Language) {
-  return i18n[lang] || i18n.en;
+  const current = (i18n as Record<string, Record<string, string>>)[lang] || i18n.en;
+  // Proxy ensures that if a key is not yet provided in Sinhala/Tamil,
+  // it gracefully falls back to English, allowing the Google Translate engine
+  // to automatically translate the text on screen in real time.
+  return new Proxy(current, {
+    get(target, prop: string) {
+      return target[prop] || (i18n.en as Record<string, string>)[prop] || prop;
+    },
+  }) as typeof i18n.en;
 }

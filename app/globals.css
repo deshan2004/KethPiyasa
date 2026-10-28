@@ -58,3 +58,24 @@ body {
     color: #000000 !important;
   }
 }
+
+/* Seamless Google Translate Integration Styles */
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame,
+.goog-te-gadget,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-text-highlight {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+#google_translate_element {
+  display: none !important;
+}
