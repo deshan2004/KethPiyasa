@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { EscrowContract } from '@/lib/types';
 import { QRCodeSVG } from 'qrcode.react';
 import { FileText, Printer, CheckCircle2, ShieldCheck, X } from 'lucide-react';
+import { useApp } from '@/lib/store';
+import { getTranslation } from '@/lib/i18n';
 
 interface InvoiceModalProps {
   contract: EscrowContract;
@@ -11,6 +13,8 @@ interface InvoiceModalProps {
 }
 
 export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose }) => {
+  const { lang } = useApp();
+  const t = getTranslation(lang);
   const [isQrEnlarged, setIsQrEnlarged] = useState(false);
 
   useEffect(() => {
