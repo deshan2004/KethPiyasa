@@ -364,10 +364,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [role, setRole] = useState<UserRole>('buyer');
   const [lang, setLangState] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
-      const match = document.cookie.match(/googtrans=\/en\/([a-z]+)/);
-      if (match && (match[1] === 'si' || match[1] === 'ta' || match[1] === 'en')) {
-        return match[1] as Language;
-      }
+      // Clear legacy Google Translate cookie if present
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${window.location.hostname}; path=/;`;
+
       const saved = localStorage.getItem('kp_lang') as Language;
       if (saved && (saved === 'en' || saved === 'si' || saved === 'ta')) {
         return saved;
@@ -380,26 +380,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLangState(newLang);
     if (typeof window !== 'undefined') {
       localStorage.setItem('kp_lang', newLang);
-
-      // Set Google Translate cookie
-      const hostname = window.location.hostname;
-      if (newLang === 'en') {
-        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${hostname}; path=/;`;
-        document.cookie = 'googtrans=/en/en; path=/;';
-      } else {
-        document.cookie = `googtrans=/en/${newLang}; path=/;`;
-        document.cookie = `googtrans=/en/${newLang}; domain=.${hostname}; path=/;`;
-      }
-
-      // If Google Translate combo is mounted, change its value directly
-      const combo = document.querySelector<HTMLSelectElement>('.goog-te-combo');
-      if (combo) {
-        combo.value = newLang;
-        combo.dispatchEvent(new Event('change'));
-      } else {
-        window.location.reload();
-      }
+      // Ensure Google Translate banner cookie is cleared
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${window.location.hostname}; path=/;`;
     }
   };
   const [listings, setListings] = useState<ProduceListing[]>(() => {

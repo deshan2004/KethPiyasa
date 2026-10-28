@@ -10,18 +10,22 @@ import {
   ZoomOut, 
   Compass, 
   Info, 
-  ArrowRight,
-  ShieldCheck,
-  Globe
+  ArrowRight, 
+  ShieldCheck, 
+  Globe,
+  Sparkles,
+  ExternalLink,
+  RotateCcw
 } from 'lucide-react';
 
-interface SriLankaMapProps {
+export interface SriLankaMapProps {
   listings?: ProduceListing[];
   activeShipment?: ShipmentJob;
   onSelectListing?: (listing: ProduceListing) => void;
+  onFilterDistrict?: (district: string) => void;
 }
 
-interface MapHub {
+export interface MapHub {
   id: string;
   name: string;
   district: string;
@@ -35,44 +39,49 @@ interface MapHub {
 }
 
 // Real GPS Coordinates for Sri Lanka Agricultural Hubs & Markets
-const hubs: MapHub[] = [
-  { id: 'jaffna', name: 'Jaffna Agrarian Hub', district: 'Jaffna', lat: 9.6615, lng: 80.0255, type: 'origin', produce: 'Jaffna Red Onions & Bananas', availableKg: 12000, priceLkr: 280, emoji: '🧅' },
-  { id: 'anuradhapura', name: 'Anuradhapura Grain Storage', district: 'Anuradhapura', lat: 8.3114, lng: 80.4037, type: 'origin', produce: 'Nadu & Samba Rice Paddy', availableKg: 45000, priceLkr: 140, emoji: '🌾' },
-  { id: 'trincomalee', name: 'Trincomalee Eastern Hub', district: 'Trincomalee', lat: 8.5874, lng: 81.2152, type: 'hub', produce: 'Corn, Cassava & Groundnut', availableKg: 18000, priceLkr: 190, emoji: '🌽' },
-  { id: 'polonnaruwa', name: 'Polonnaruwa Paddy Grid', district: 'Polonnaruwa', lat: 7.9403, lng: 81.0188, type: 'origin', produce: 'Keeri Samba Paddy', availableKg: 35000, priceLkr: 145, emoji: '🌾' },
+export const hubs: MapHub[] = [
   { id: 'dambulla', name: 'Dambulla Dedicated Economic Center', district: 'Dambulla', lat: 7.8731, lng: 80.6517, type: 'market', produce: 'National Vegetable Wholesale Center', availableKg: 85000, priceLkr: 110, emoji: '🏬' },
   { id: 'nuwara-eliya', name: 'Nuwara Eliya Highlands', district: 'Nuwara Eliya', lat: 6.9497, lng: 80.7891, type: 'origin', produce: 'Export Grade Leeks, Carrots & Potatoes', availableKg: 28000, priceLkr: 135, emoji: '🥕' },
   { id: 'keppetipola', name: 'Keppetipola Economic Center', district: 'Badulla', lat: 6.9022, lng: 80.9168, type: 'hub', produce: 'Beetroot, Cabbage & Beans', availableKg: 19500, priceLkr: 120, emoji: '🥬' },
-  { id: 'monaragala', name: 'Monaragala Agri Zone', district: 'Monaragala', lat: 6.8726, lng: 81.3507, type: 'origin', produce: 'Green Chili & Maize', availableKg: 14000, priceLkr: 320, emoji: '🌶️' },
+  { id: 'anuradhapura', name: 'Anuradhapura Grain Storage', district: 'Anuradhapura', lat: 8.3114, lng: 80.4037, type: 'origin', produce: 'Nadu & Samba Rice Paddy', availableKg: 45000, priceLkr: 140, emoji: '🌾' },
+  { id: 'polonnaruwa', name: 'Polonnaruwa Paddy Grid', district: 'Polonnaruwa', lat: 7.9403, lng: 81.0188, type: 'origin', produce: 'Keeri Samba Paddy', availableKg: 35000, priceLkr: 145, emoji: '🌾' },
+  { id: 'jaffna', name: 'Jaffna Agrarian Hub', district: 'Jaffna', lat: 9.6615, lng: 80.0255, type: 'origin', produce: 'Jaffna Red Onions & Bananas', availableKg: 12000, priceLkr: 280, emoji: '🧅' },
+  { id: 'trincomalee', name: 'Trincomalee Eastern Hub', district: 'Trincomalee', lat: 8.5874, lng: 81.2152, type: 'hub', produce: 'Corn, Cassava & Groundnut', availableKg: 18000, priceLkr: 190, emoji: '🌽' },
   { id: 'colombo', name: 'Pettah Wholesale & Manning Market', district: 'Colombo', lat: 6.9360, lng: 79.8530, type: 'market', produce: 'Commercial Distribution & B2B Escrow Center', availableKg: 120000, priceLkr: 150, emoji: '🏢' },
   { id: 'welisara', name: 'Welisara Logistics Hub', district: 'Gampaha', lat: 7.0080, lng: 79.8970, type: 'hub', produce: 'Refrigerated Cold Storage & Freight Logistics', availableKg: 50000, priceLkr: 0, emoji: '🚚' },
+  { id: 'monaragala', name: 'Monaragala Agri Zone', district: 'Monaragala', lat: 6.8726, lng: 81.3507, type: 'origin', produce: 'Green Chili & Maize', availableKg: 14000, priceLkr: 320, emoji: '🌶️' },
 ];
 
-// Tile layer URLs based on mapStyle mode (100% Free, No API Key Required)
-const getTileUrlAndAttribution = (style: 'vector' | 'satellite' | 'routes') => {
+// 100% Free OpenStreetMap & Satellite Tile Providers
+const getTileUrlAndAttribution = (style: 'osm' | 'satellite' | 'terrain') => {
   switch (style) {
     case 'satellite':
       return {
         url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         attribution: '&copy; Esri World Imagery &mdash; Source: Esri, Maxar, Earthstar Geographics'
       };
-    case 'routes':
+    case 'terrain':
       return {
-        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        attribution: 'Map data &copy; OpenStreetMap contributors, SRTM | Map style &copy; OpenTopoMap'
       };
-    case 'vector':
+    case 'osm':
     default:
       return {
-        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-        attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
       };
   }
 };
 
-export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeShipment, onSelectListing }) => {
-  const [selectedHubId, setSelectedHubId] = useState<string | null>('nuwara-eliya');
-  const [mapStyle, setMapStyle] = useState<'vector' | 'satellite' | 'routes'>('vector');
+export const SriLankaMap: React.FC<SriLankaMapProps> = ({ 
+  listings = [], 
+  activeShipment, 
+  onSelectListing,
+  onFilterDistrict 
+}) => {
+  const [selectedHubId, setSelectedHubId] = useState<string>('dambulla');
+  const [mapStyle, setMapStyle] = useState<'osm' | 'satellite' | 'terrain'>('osm');
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -80,9 +89,29 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
   const markersRef = useRef<any[]>([]);
   const polylinesRef = useRef<any[]>([]);
 
-  const selectedHub = hubs.find((h) => h.id === selectedHubId) || hubs[5];
+  const selectedHub = hubs.find((h) => h.id === selectedHubId) || hubs[0];
 
-  // Initialize Leaflet Map
+  // Helper to match produce listings to a hub
+  const getMatchingListings = (hub: MapHub) => {
+    const h = hub.district.toLowerCase();
+    const hubName = hub.name.toLowerCase();
+    return listings.filter((l) => {
+      const d = l.locationDistrict.toLowerCase();
+      const lHub = l.locationHub.toLowerCase();
+      return (
+        d.includes(h) ||
+        lHub.includes(h) ||
+        hubName.includes(d) ||
+        (h.includes('dambulla') && (d.includes('matale') || lHub.includes('dambulla'))) ||
+        (h.includes('colombo') && (d.includes('colombo') || d.includes('gampaha'))) ||
+        (h.includes('nuwara') && d.includes('nuwara'))
+      );
+    });
+  };
+
+  const matchingListings = getMatchingListings(selectedHub);
+
+  // Initialize Leaflet OpenStreetMap
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
@@ -94,18 +123,23 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
       return;
     }
 
-    // Initialize Map centered on Sri Lanka
+    // Centered on Sri Lanka with bounds covering whole island
     const map = L.map(mapContainerRef.current, {
-      center: [7.8731, 80.7718],
+      center: [7.8731, 80.6517],
       zoom: 8,
       minZoom: 7,
-      maxZoom: 14,
+      maxZoom: 18,
       zoomControl: false,
       attributionControl: false,
     });
 
-    const { url, attribution } = getTileUrlAndAttribution('vector');
-    const initialTileLayer = L.tileLayer(url, { attribution, maxZoom: 19 }).addTo(map);
+    // Default to OpenStreetMap Standard
+    const { url, attribution } = getTileUrlAndAttribution('osm');
+    const initialTileLayer = L.tileLayer(url, { 
+      attribution, 
+      maxZoom: 19,
+      crossOrigin: true 
+    }).addTo(map);
     tileLayerRef.current = initialTileLayer;
 
     // Add Attribution at bottom right
@@ -130,7 +164,11 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
     if (tileLayerRef.current) {
       mapInstanceRef.current.removeLayer(tileLayerRef.current);
     }
-    const newTileLayer = L.tileLayer(url, { attribution, maxZoom: 19 }).addTo(mapInstanceRef.current);
+    const newTileLayer = L.tileLayer(url, { 
+      attribution, 
+      maxZoom: 19,
+      crossOrigin: true 
+    }).addTo(mapInstanceRef.current);
     tileLayerRef.current = newTileLayer;
   }, [mapStyle]);
 
@@ -152,9 +190,9 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
     const Southern_Polyline = [[6.9360, 79.8530], [6.0535, 80.2210], [6.1241, 81.1185]];
 
     const polyOptions = {
-      vector: { color: '#10b981', weight: 3, opacity: 0.6, dashArray: '6, 6' },
-      satellite: { color: '#38bdf8', weight: 3, opacity: 0.8 },
-      routes: { color: '#d97706', weight: 4, opacity: 0.9 },
+      osm: { color: '#059669', weight: 3.5, opacity: 0.85, dashArray: '6, 6' },
+      satellite: { color: '#38bdf8', weight: 3.5, opacity: 0.9 },
+      terrain: { color: '#d97706', weight: 4, opacity: 0.9 },
     }[mapStyle];
 
     const poly1 = L.polyline(A9_Polyline, polyOptions).addTo(mapInstanceRef.current);
@@ -169,7 +207,7 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
       const activePoly = L.polyline(activeRouteCoords, {
         color: '#0284c7',
         weight: 5,
-        opacity: 0.9,
+        opacity: 0.95,
         dashArray: '8, 8'
       }).addTo(mapInstanceRef.current);
       polylinesRef.current.push(activePoly);
@@ -177,16 +215,22 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
       // Active Truck Marker
       const truckIcon = L.divIcon({
         className: 'custom-leaflet-marker',
-        html: `<div style="background:#0284c7; color:#fff; padding:6px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 12px rgba(2,132,199,0.8); font-size:14px;">🚚</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        html: `<div style="background:#0284c7; color:#fff; width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:2px solid #fff; box-shadow:0 0 16px rgba(2,132,199,0.9); font-size:16px;">🚚</div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
       });
       const truckMarker = L.marker([7.4, 80.2], { icon: truckIcon }).addTo(mapInstanceRef.current);
-      truckMarker.bindPopup(`<b>🚚 Active Shipment: ${activeShipment.id}</b><br/>${activeShipment.produceTitle}`);
+      truckMarker.bindPopup(`
+        <div style="font-family:sans-serif; padding:4px;">
+          <b style="color:#0284c7;">🚚 Active Dispatch: ${activeShipment.id}</b><br/>
+          <span style="font-size:12px; color:#334155;">${activeShipment.produceTitle}</span><br/>
+          <span style="font-size:11px; color:#64748b;">Vehicle: ${activeShipment.haulerVehicle}</span>
+        </div>
+      `);
       markersRef.current.push(truckMarker);
     }
 
-    // Render Interactive Hub Pins
+    // Render Interactive Hub Pins with OpenStreetMap Popup
     hubs.forEach((hub) => {
       const isSelected = selectedHubId === hub.id;
       const markerColor = isSelected 
@@ -200,25 +244,42 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
       const customIcon = L.divIcon({
         className: 'custom-leaflet-marker',
         html: `
-          <div style="display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%);">
-            <div style="background:${markerColor}; color:#fff; border:2px solid #ffffff; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-center; box-shadow:0 4px 10px rgba(0,0,0,0.5); font-size:16px; font-weight:bold; transition:all 0.2s;">
-              <span style="margin:auto;">${hub.emoji}</span>
+          <div style="display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%); cursor:pointer;">
+            <div style="background:${markerColor}; color:#fff; border:${isSelected ? '3px solid #34d399' : '2px solid #ffffff'}; border-radius:50%; width:${isSelected ? '38px' : '32px'}; height:${isSelected ? '38px' : '32px'}; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.5); font-size:${isSelected ? '18px' : '15px'}; transition:all 0.2s;">
+              <span>${hub.emoji}</span>
             </div>
-            <div style="background:${isSelected ? '#064e3b' : '#0f172a'}; color:${isSelected ? '#ffffff' : '#cbd5e1'}; font-size:10px; font-weight:bold; padding:2px 8px; border-radius:6px; border:1px solid ${isSelected ? '#34d399' : '#334155'}; margin-top:2px; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.4);">
+            <div style="background:${isSelected ? '#064e3b' : '#0f172a'}; color:#ffffff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; border:1px solid ${isSelected ? '#34d399' : '#334155'}; margin-top:2px; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.4);">
               ${hub.name.split(' ')[0]}
             </div>
           </div>
         `,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0],
+        iconSize: [38, 48],
+        iconAnchor: [19, 48],
       });
 
       const marker = L.marker([hub.lat, hub.lng], { icon: customIcon }).addTo(mapInstanceRef.current);
 
+      marker.bindPopup(`
+        <div style="font-family:sans-serif; min-width:180px; padding:4px;">
+          <div style="font-size:14px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:6px;">
+            <span>${hub.emoji}</span> <span>${hub.name}</span>
+          </div>
+          <div style="font-size:11px; color:#059669; font-weight:700; margin-top:2px;">
+            📍 ${hub.district} District
+          </div>
+          <div style="font-size:12px; color:#475569; margin-top:4px;">
+            <b>Crop:</b> ${hub.produce}
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-top:2px;">
+            Stock: <b>${hub.availableKg.toLocaleString()} Kg</b> ${hub.priceLkr > 0 ? `• LKR ${hub.priceLkr}/Kg` : ''}
+          </div>
+        </div>
+      `);
+
       marker.on('click', () => {
         setSelectedHubId(hub.id);
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.panTo([hub.lat, hub.lng]);
+          mapInstanceRef.current.flyTo([hub.lat, hub.lng], 9, { animate: true, duration: 0.8 });
         }
       });
 
@@ -235,71 +296,121 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
     if (mapInstanceRef.current) mapInstanceRef.current.zoomOut();
   };
 
+  const handleResetView = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([7.8731, 80.6517], 8, { animate: true, duration: 0.8 });
+    }
+  };
+
+  const handleSelectHub = (hub: MapHub) => {
+    setSelectedHubId(hub.id);
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([hub.lat, hub.lng], 9, { animate: true, duration: 0.8 });
+    }
+  };
+
+  const handleFilterClick = () => {
+    if (onFilterDistrict) {
+      onFilterDistrict(selectedHub.district);
+    }
+    if (matchingListings.length > 0 && onSelectListing) {
+      onSelectListing(matchingListings[0]);
+    }
+    const el = document.getElementById('active-listings');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="bg-slate-950 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden text-slate-100">
-      {/* Top Google Maps Header Control Bar */}
+      {/* Top Map Header Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800/80">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center shadow-lg text-emerald-400">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center shadow-lg text-emerald-400 shrink-0">
             <Compass className="w-5 h-5 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">Sri Lanka Interactive Agri Map</h3>
+              <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">Sri Lanka OpenStreetMap Agri Grid</h3>
               <span className="text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
-                <Globe className="w-3 h-3 text-emerald-400 animate-spin" /> Live GIS OpenStreetMap
+                <Globe className="w-3 h-3 text-emerald-400" /> Live OpenStreetMap (OSM)
               </span>
             </div>
-            <p className="text-xs text-slate-400">Real Interactive Map with Live Produce Pins, Highways & Logistics Checkpoints</p>
+            <p className="text-xs text-slate-400">Open-source real-time GPS coordinates for Sri Lankan Wholesale Markets, Farms & Logistics Corridors</p>
           </div>
         </div>
 
         {/* Map View Mode Controls */}
-        <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+        <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
           <button
-            onClick={() => setMapStyle('vector')}
+            onClick={() => setMapStyle('osm')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-              mapStyle === 'vector' ? 'bg-[#064e3b] text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              mapStyle === 'osm' ? 'bg-[#064e3b] text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
+            title="OpenStreetMap Standard Street Layer"
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Dark Vector</span>
+            <Globe className="w-3.5 h-3.5" />
+            <span>OpenStreetMap</span>
           </button>
           <button
             onClick={() => setMapStyle('satellite')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
               mapStyle === 'satellite' ? 'bg-sky-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
+            title="Satellite Aerial Imagery"
           >
-            <span>Satellite Hybrid</span>
+            <Layers className="w-3.5 h-3.5" />
+            <span>Satellite</span>
           </button>
           <button
-            onClick={() => setMapStyle('routes')}
+            onClick={() => setMapStyle('terrain')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-              mapStyle === 'routes' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              mapStyle === 'terrain' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
+            title="Topographical Mountain Terrain"
           >
-            <Truck className="w-3.5 h-3.5" />
-            <span>Freight Corridors</span>
+            <span>Topography</span>
           </button>
         </div>
       </div>
 
+      {/* Quick Hub Navigation Chips Bar */}
+      <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+        <span className="text-slate-400 font-bold shrink-0 text-[11px] uppercase tracking-wider flex items-center gap-1">
+          <Sparkles className="w-3 h-3 text-amber-400" /> Quick Jump:
+        </span>
+        {hubs.map((hub) => (
+          <button
+            key={hub.id}
+            onClick={() => handleSelectHub(hub)}
+            className={`px-3 py-1.5 rounded-full shrink-0 font-bold transition-all flex items-center gap-1.5 cursor-pointer border text-xs ${
+              selectedHubId === hub.id 
+                ? 'bg-[#064e3b] text-white border-emerald-400 shadow-sm scale-105' 
+                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:border-slate-700'
+            }`}
+          >
+            <span>{hub.emoji}</span>
+            <span>{hub.name.split(' ')[0]}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Main Map Viewport */}
-        <div className="lg:col-span-8 relative rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-center min-h-[460px] sm:min-h-[520px] shadow-inner">
+        <div className="lg:col-span-8 relative rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-center min-h-[460px] sm:min-h-[520px] shadow-inner bg-slate-900">
           
-          {/* Leaflet Map Div Container */}
+          {/* Leaflet OpenStreetMap Container */}
           <div ref={mapContainerRef} className="w-full h-full min-h-[460px] sm:min-h-[520px] z-0" />
 
-          {/* Compass Rose Overlay */}
+          {/* Location Badge Overlay */}
           <div className="absolute top-4 left-4 z-10 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] font-bold text-slate-300 flex items-center gap-2 shadow-md pointer-events-none">
-            <span className="text-emerald-400 font-mono">N 🧭 7.8731° N, 80.7718° E</span>
+            <span className="text-emerald-400 font-mono">📍 {selectedHub.lat.toFixed(4)}° N, {selectedHub.lng.toFixed(4)}° E</span>
             <span className="text-slate-600">|</span>
-            <span>Sri Lanka Grid</span>
+            <span className="text-white">{selectedHub.name.split(' ')[0]} Hub</span>
           </div>
 
-          {/* Floating Zoom Controls */}
+          {/* Floating Zoom & Reset Controls */}
           <div className="absolute top-4 right-4 z-10 flex flex-col gap-1.5">
             <button
               onClick={handleZoomIn}
@@ -315,10 +426,17 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
             >
               <ZoomOut className="w-4 h-4" />
             </button>
+            <button
+              onClick={handleResetView}
+              className="w-9 h-9 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center shadow-lg active:scale-95 transition-all cursor-pointer"
+              title="Reset View to Whole Sri Lanka"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
-        {/* Google Maps Interactive Information Panel (Right Side) */}
+        {/* Interactive Information Panel (Right Side) */}
         <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
           
           {/* Selected Location Info Card */}
@@ -326,7 +444,7 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
               <div className="flex items-start justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#064e3b] text-white flex items-center justify-center text-xl shadow-md border border-emerald-500/50">
+                  <div className="w-11 h-11 rounded-2xl bg-[#064e3b] text-white flex items-center justify-center text-2xl shadow-md border border-emerald-500/50 shrink-0">
                     {selectedHub.emoji}
                   </div>
                   <div>
@@ -365,16 +483,16 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
                 </div>
               </div>
 
+              {/* Working Action Button with real matching count */}
               <button
-                onClick={() => {
-                  const matchingListing = listings.find((l) => l.locationDistrict.toLowerCase().includes(selectedHub.district.toLowerCase()));
-                  if (matchingListing && onSelectListing) {
-                    onSelectListing(matchingListing);
-                  }
-                }}
-                className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold py-2.5 rounded-xl shadow transition-all flex items-center justify-center gap-2 text-xs cursor-pointer active:scale-98"
+                onClick={handleFilterClick}
+                className="w-full bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs cursor-pointer active:scale-98"
               >
-                <span>Filter Listings for {selectedHub.district}</span>
+                <span>
+                  {matchingListings.length > 0 
+                    ? `View ${matchingListings.length} Produce Batches in ${selectedHub.district}` 
+                    : `Filter Produce for ${selectedHub.district}`}
+                </span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -386,9 +504,15 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
               <Info className="w-3.5 h-3.5 text-emerald-400" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-full px-2 py-1"><span className="w-2 h-2 rounded-full bg-emerald-500 block" />Origin</span>
-              <span className="inline-flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-full px-2 py-1"><span className="w-2 h-2 rounded-full bg-sky-500 block" />Hub</span>
-              <span className="inline-flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-full px-2 py-1"><span className="w-2 h-2 rounded-full bg-amber-500 block" />Wholesale</span>
+              <span className="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-full px-2.5 py-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 block" /> Farm Origin
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-full px-2.5 py-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-500 block" /> Regional Hub
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-full px-2.5 py-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 block" /> Wholesale Center
+              </span>
             </div>
           </div>
 
@@ -424,10 +548,10 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
             <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl text-xs space-y-2">
               <div className="flex items-center gap-2 text-emerald-400 font-bold">
                 <ShieldCheck className="w-4 h-4" />
-                <span>Verified Agricultural Grid</span>
+                <span>Verified Agricultural OpenStreetMap Grid</span>
               </div>
               <p className="text-slate-400 leading-relaxed text-[11px]">
-                Real-time GIS pins connect Nuwara Eliya, Dambulla, Keppetipola, and Colombo markets with zero broker markup.
+                Real-time OpenStreetMap GIS pins connect Nuwara Eliya, Dambulla, Keppetipola, and Colombo markets with zero broker markup.
               </p>
             </div>
           )}

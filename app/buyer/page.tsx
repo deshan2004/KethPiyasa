@@ -605,7 +605,13 @@ export default function BuyerPage() {
 
               {/* Spacious Map Container */}
               <div className="w-full">
-                <SriLankaMap listings={filteredListings} onSelectListing={(l) => handleOpenBidding(l)} />
+                <SriLankaMap 
+                  listings={filteredListings} 
+                  onSelectListing={(l) => handleOpenBidding(l)} 
+                  onFilterDistrict={(dist) => {
+                    setSelectedDistrict(dist);
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -632,7 +638,14 @@ export default function BuyerPage() {
               </div>
 
               <div className="w-full">
-                <SriLankaMap listings={filteredListings} onSelectListing={(l) => handleOpenBidding(l)} />
+                <SriLankaMap 
+                  listings={filteredListings} 
+                  onSelectListing={(l) => handleOpenBidding(l)} 
+                  onFilterDistrict={(dist) => {
+                    setSelectedDistrict(dist);
+                    setActiveTab('procurement');
+                  }}
+                />
               </div>
             </div>
           </div>
