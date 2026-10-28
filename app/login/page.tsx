@@ -132,10 +132,11 @@ function LoginFormContent() {
       setTimeout(() => {
         router.push(targetRoute);
       }, 500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
+      const err = error as { code?: string; message?: string };
 
-      if (error?.code === 'auth/invalid-credential') {
+      if (err?.code === 'auth/invalid-credential') {
         setErrorMsg(
           lang === 'si'
             ? 'විද්‍යුත් තැපෑල හෝ මුරපදය වැරදියි. කරුණාකර නැවත පරීක්ෂා කරන්න.'
@@ -143,7 +144,7 @@ function LoginFormContent() {
             ? 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல். சரிபார்க்கவும்.'
             : 'Invalid email or password. Please check your credentials.'
         );
-      } else if (error?.code === 'auth/user-not-found') {
+      } else if (err?.code === 'auth/user-not-found') {
         setErrorMsg(
           lang === 'si'
             ? 'මෙම විද්‍යුත් තැපෑලෙන් ගිණුමක් හමු නොවීය.'
@@ -151,7 +152,7 @@ function LoginFormContent() {
             ? 'இந்த மின்னஞ்சலில் கணக்கு எதுவும் இல்லை.'
             : 'No account found with this email address.'
         );
-      } else if (error?.code === 'auth/wrong-password') {
+      } else if (err?.code === 'auth/wrong-password') {
         setErrorMsg(
           lang === 'si'
             ? 'මුරපදය වැරදියි.'
@@ -159,7 +160,7 @@ function LoginFormContent() {
             ? 'தவறான கடவுச்சொல்.'
             : 'Incorrect password.'
         );
-      } else if (error?.code === 'auth/invalid-email') {
+      } else if (err?.code === 'auth/invalid-email') {
         setErrorMsg(
           lang === 'si'
             ? 'කරුණාකර නිවැරදි විද්‍යුත් තැපැල් ලිපිනයක් ඇතුළත් කරන්න.'
@@ -167,11 +168,11 @@ function LoginFormContent() {
             ? 'செல்லுபடியாகும் மின்னஞ்சல் முகவரியை உள்ளிடவும்.'
             : 'Please enter a valid email address.'
         );
-      } else if (error?.message?.includes('registered as')) {
-        setErrorMsg(error.message);
+      } else if (err?.message?.includes('registered as')) {
+        setErrorMsg(err.message);
       } else {
         setErrorMsg(
-          error?.message ||
+          err?.message ||
             (lang === 'si'
               ? 'ලොග් වීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.'
               : lang === 'ta'

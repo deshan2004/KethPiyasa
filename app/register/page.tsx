@@ -156,10 +156,11 @@ export default function RegisterPage() {
       setTimeout(() => {
         router.push(targetRoute);
       }, 700);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
+      const err = error as { code?: string; message?: string };
 
-      if (error?.code === 'auth/email-already-in-use') {
+      if (err?.code === 'auth/email-already-in-use') {
         setErrorMsg(
           lang === 'si'
             ? 'මෙම විද්‍යුත් තැපැල් ලිපිනයෙන් දැනටමත් ගිණුමක් සාදා ඇත.'
@@ -167,7 +168,7 @@ export default function RegisterPage() {
             ? 'இந்த மின்னஞ்சல் முகவரி ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது.'
             : 'This email address is already registered.'
         );
-      } else if (error?.code === 'auth/invalid-email') {
+      } else if (err?.code === 'auth/invalid-email') {
         setErrorMsg(
           lang === 'si'
             ? 'කරුණාකර නිවැරදි විද්‍යුත් තැපැල් ලිපිනයක් ඇතුළත් කරන්න.'
@@ -175,7 +176,7 @@ export default function RegisterPage() {
             ? 'செல்லுபடியாகும் மின்னஞ்சல் முகவரியை உள்ளிடவும்.'
             : 'Please enter a valid email address.'
         );
-      } else if (error?.code === 'auth/weak-password') {
+      } else if (err?.code === 'auth/weak-password') {
         setErrorMsg(
           lang === 'si'
             ? 'මුරපදය ප්‍රමාණවත් නොවේ. අවම වශයෙන් අක්ෂර 6ක් භාවිතා කරන්න.'
@@ -185,7 +186,7 @@ export default function RegisterPage() {
         );
       } else {
         setErrorMsg(
-          error?.message ||
+          err?.message ||
             (lang === 'si'
               ? 'ලියාපදිංචි වීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.'
               : lang === 'ta'
