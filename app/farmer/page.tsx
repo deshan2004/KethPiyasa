@@ -364,7 +364,7 @@ export default function FarmerPage() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 space-y-6">
+      <main className="flex-1 min-w-0 space-y-6">
         {/* Section Header */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
           <div>

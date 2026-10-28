@@ -24,7 +24,7 @@ declare global {
 
 export const GoogleTranslate: React.FC = () => {
   useEffect(() => {
-    // 1. Initialize Google Translate Element silently in the background
+    // 1. Initialize Google Translate Element silently in the background using Simple Inline layout
     window.googleTranslateElementInit = () => {
       if (window.google?.translate?.TranslateElement) {
         new window.google.translate.TranslateElement(
@@ -32,13 +32,14 @@ export const GoogleTranslate: React.FC = () => {
             pageLanguage: 'en',
             includedLanguages: 'en,si,ta',
             autoDisplay: false,
+            layout: (window.google.translate.TranslateElement as any).InlineLayout?.SIMPLE || 0,
           },
           'google_translate_element'
         );
       }
     };
 
-    // 2. Bulletproof script to kill and hide the top banner iframe and prevent body pushing down
+    // 2. Hide any leftover banner frames without locking body scroll
     const suppressGoogleBanner = () => {
       if (document.body && document.body.style.top && document.body.style.top !== '0px') {
         document.body.style.setProperty('top', '0px', 'important');
@@ -52,7 +53,6 @@ export const GoogleTranslate: React.FC = () => {
         '.VIpgJd-yAWNEb-VIpgJd-fmcmS-sn54Q',
         '#goog-gt-tt',
         '.goog-te-balloon-frame',
-        '.goog-tooltip',
       ];
 
       selectors.forEach((sel) => {
@@ -61,11 +61,8 @@ export const GoogleTranslate: React.FC = () => {
           el.style.setProperty('display', 'none', 'important');
           el.style.setProperty('visibility', 'hidden', 'important');
           el.style.setProperty('height', '0px', 'important');
-          el.style.setProperty('max-height', '0px', 'important');
           el.style.setProperty('position', 'absolute', 'important');
           el.style.setProperty('top', '-9999px', 'important');
-          el.style.setProperty('opacity', '0', 'important');
-          el.style.setProperty('pointer-events', 'none', 'important');
         });
       });
     };
@@ -75,15 +72,10 @@ export const GoogleTranslate: React.FC = () => {
     observer.observe(document.documentElement, {
       childList: true,
       subtree: true,
-      attributes: true,
-      attributeFilter: ['style', 'class'],
     });
-
-    const interval = setInterval(suppressGoogleBanner, 250);
 
     return () => {
       observer.disconnect();
-      clearInterval(interval);
     };
   }, []);
 
