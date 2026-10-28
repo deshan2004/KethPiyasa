@@ -43,6 +43,13 @@ body {
 }
 
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+  body {
+    background: #ffffff !important;
+  }
   body * {
     visibility: hidden;
   }
@@ -54,8 +61,48 @@ body {
     left: 0;
     top: 0;
     width: 100%;
+    margin: 0;
+    padding: 12px !important;
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  #printable-invoice * {
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    background-color: transparent !important;
+  }
+  #printable-invoice .bg-slate-950,
+  #printable-invoice .bg-slate-950\/60,
+  #printable-invoice .bg-slate-900 {
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+  #printable-invoice .bg-white,
+  #printable-invoice .bg-white * {
+    background-color: #ffffff !important;
+  }
+  #printable-invoice .text-white,
+  #printable-invoice .text-slate-200,
+  #printable-invoice .text-slate-300 {
+    color: #0f172a !important;
+  }
+  #printable-invoice .text-slate-400,
+  #printable-invoice .text-slate-500 {
+    color: #475569 !important;
+  }
+  #printable-invoice .text-amber-400 {
+    color: #065f46 !important;
+    font-weight: 800 !important;
+  }
+  #printable-invoice .text-emerald-400 {
+    color: #065f46 !important;
+  }
+  #printable-invoice button {
+    display: flex !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #f8fafc !important;
   }
 }
 

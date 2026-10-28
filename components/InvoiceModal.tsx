@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { EscrowContract } from '@/lib/types';
 import { QRCodeSVG } from 'qrcode.react';
-import { FileText, Printer, CheckCircle2, ShieldCheck, X } from 'lucide-react';
+import { FileText, Printer, Download, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { getTranslation } from '@/lib/i18n';
 
@@ -18,40 +18,54 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
   const [isQrEnlarged, setIsQrEnlarged] = useState(false);
 
   useEffect(() => {
-    if (!isQrEnlarged) return;
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsQrEnlarged(false);
+      if (event.key === 'Escape') {
+        if (isQrEnlarged) {
+          setIsQrEnlarged(false);
+        } else {
+          onClose();
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isQrEnlarged]);
+  }, [isQrEnlarged, onClose]);
 
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
-        {/* Modal Header */}
-        <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+    <div 
+      className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-md flex justify-center items-start p-3 sm:p-6 overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-4 sm:my-8 animate-in fade-in zoom-in-95 duration-200 relative flex flex-col">
+        {/* Sticky Modal Header */}
+        <div className="sticky top-0 z-20 bg-slate-950 px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-800 flex items-center justify-between shadow-md print:hidden">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-emerald-400" />
-            <h3 className="font-bold text-white text-base">{t.invoiceModalTitle}</h3>
+            <h3 className="font-bold text-white text-sm sm:text-base">{t.invoiceModalTitle}</h3>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 transition-colors"
+              type="button"
+              className="flex items-center gap-1.5 bg-[#064e3b] hover:bg-[#043e2f] text-white px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer border border-emerald-600/40"
+              title="Download / Print PDF"
             >
-              <Printer className="w-3.5 h-3.5" /> {t.printPdf}
+              <Download className="w-3.5 h-3.5" />
+              <span>{t.printPdf || 'Download PDF'}</span>
             </button>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              type="button"
+              aria-label="Close invoice modal"
+              className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer border border-transparent hover:border-slate-700"
             >
               <X className="w-5 h-5" />
             </button>
@@ -177,9 +191,25 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="bg-slate-950 px-6 py-4 border-t border-slate-800 text-center text-xs text-slate-400">
-          {t.invoiceSecurityFoot}
+        {/* Modal Footer Controls */}
+        <div className="bg-slate-950 px-5 sm:px-6 py-3.5 sm:py-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 print:hidden">
+          <span className="text-[11px] text-slate-400">{t.invoiceSecurityFoot}</span>
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-xs cursor-pointer"
+            >
+              <Download className="w-4 h-4" /> Download / Print PDF
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-4 py-2 rounded-xl text-xs transition-all cursor-pointer border border-slate-700"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
 
