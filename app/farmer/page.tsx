@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { useApp } from '@/lib/store';
 import { getTranslation } from '@/lib/i18n';
-import { ProduceListing, QualityGrade, NegotiationOffer, ShipmentJob, DisputeTicket } from '@/lib/types';
+import { ProduceListing, QualityGrade, NegotiationOffer, ShipmentJob, DisputeTicket, EscrowContract } from '@/lib/types';
 import { InvoiceModal } from '@/components/InvoiceModal';
 import { ProfileVerificationModal } from '@/components/ProfileVerificationModal';
 import { ContactModal } from '@/components/ContactModal';
@@ -75,7 +75,7 @@ export default function FarmerPage() {
   // Modal States
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [invoiceModalContract, setInvoiceModalContract] = useState<any | null>(null);
+  const [invoiceModalContract, setInvoiceModalContract] = useState<EscrowContract | null>(null);
   
   // Counter Offer Modal State
   const [selectedOfferForCounter, setSelectedOfferForCounter] = useState<NegotiationOffer | null>(null);

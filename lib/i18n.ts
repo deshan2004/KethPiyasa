@@ -69,7 +69,7 @@ export const i18n = {
     isPreHarvest: 'Mark as Pre-Harvest (Advance Booking Forward Contract)',
     organicCert: 'Certified Organic / Good Agricultural Practice (GAP)',
     moistureContent: 'Moisture / Freshness Level',
-    minOrderQty: 'Minimum Order Quantity (Kg)',
+    minOrderQtyFull: 'Minimum Order Quantity (Kg)',
     cropDescription: 'Produce Notes & Field Description',
     submitListing: 'Publish Produce Listing',
 
@@ -409,7 +409,7 @@ export const i18n = {
     isPreHarvest: 'පූර්ව අස්වැන්නක් ලෙස ලකුණු කරන්න (Forward Contract)',
     organicCert: 'කාබනික / GAP සහතික ලත් අස්වැන්න',
     moistureContent: 'තෙතමනය / تازගතිය',
-    minOrderQty: 'අවම ඇණවුම් ප්‍රමාණය (කිලෝග්‍රෑම්)',
+    minOrderQtyFull: 'අවම ඇණවුම් ප්‍රමාණය (කිලෝග්‍රෑම්)',
     cropDescription: 'බෝගය පිළිබඳ විස්තර',
     submitListing: 'ලැයිස්තුගත කිරීම ප්‍රකාශයට පත් කරන්න',
 
@@ -749,7 +749,7 @@ export const i18n = {
     isPreHarvest: 'முன்கூட்டிய அறுவடையாக குறிக்கவும் (Forward Contract)',
     organicCert: 'இயற்கை / GAP சான்றளிக்கப்பட்ட விளைச்சல்',
     moistureContent: 'ஈரப்பதம் / புத்துணர்ச்சி நிலை',
-    minOrderQty: 'குறைந்தபட்ச ஆர்டர் அளவு (கிலோ)',
+    minOrderQtyFull: 'குறைந்தபட்ச ஆர்டர் அளவு (கிலோ)',
     cropDescription: 'பயிர் விவரங்கள்',
     submitListing: 'பட்டியலை வெளியிடுக',
 

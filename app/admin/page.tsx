@@ -26,6 +26,17 @@ export default function AdminPage() {
   const { marketPrices, updateMarketPrice, contracts, disputes, resolveDispute, lang } = useApp();
   const t = getTranslation(lang);
 
+  const [activeTab, setActiveTab] = useState<'users' | 'escrow' | 'disputes' | 'prices'>('users');
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [editPriceVal, setEditPriceVal] = useState<number>(0);
+
+  // Mock pending verification requests
+  const [pendingVerifications, setPendingVerifications] = useState([
+    { id: 'v1', name: 'Rathnayake Produce Traders', type: 'Commercial Buyer', nicOrBrn: 'BRN-2024-98124', district: 'Dambulla', status: 'pending' },
+    { id: 'v2', name: 'Kandy Highland Farmers Co-op', type: 'Farmer Producer', nicOrBrn: '740192837V', district: 'Kandy', status: 'pending' },
+    { id: 'v3', name: 'Lanka Freight Express', type: 'Logistics Hauler', nicOrBrn: 'BRN-2022-44120', district: 'Colombo', status: 'pending' },
+  ]);
+
   if (!user || user.role !== 'admin') {
     return (
       <div className="max-w-xl mx-auto my-12 bg-white border border-slate-200 rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-sm">
@@ -55,17 +66,6 @@ export default function AdminPage() {
       </div>
     );
   }
-
-  const [activeTab, setActiveTab] = useState<'users' | 'escrow' | 'disputes' | 'prices'>('users');
-  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
-  const [editPriceVal, setEditPriceVal] = useState<number>(0);
-
-  // Mock pending verification requests
-  const [pendingVerifications, setPendingVerifications] = useState([
-    { id: 'v1', name: 'Rathnayake Produce Traders', type: 'Commercial Buyer', nicOrBrn: 'BRN-2024-98124', district: 'Dambulla', status: 'pending' },
-    { id: 'v2', name: 'Kandy Highland Farmers Co-op', type: 'Farmer Producer', nicOrBrn: '740192837V', district: 'Kandy', status: 'pending' },
-    { id: 'v3', name: 'Lanka Freight Express', type: 'Logistics Hauler', nicOrBrn: 'BRN-2022-44120', district: 'Colombo', status: 'pending' },
-  ]);
 
   const handleApproveVerification = (id: string) => {
     setPendingVerifications((prev) => prev.map((v) => (v.id === id ? { ...v, status: 'approved' } : v)));

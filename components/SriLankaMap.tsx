@@ -34,6 +34,42 @@ interface MapHub {
   emoji: string;
 }
 
+// Real GPS Coordinates for Sri Lanka Agricultural Hubs & Markets
+const hubs: MapHub[] = [
+  { id: 'jaffna', name: 'Jaffna Agrarian Hub', district: 'Jaffna', lat: 9.6615, lng: 80.0255, type: 'origin', produce: 'Jaffna Red Onions & Bananas', availableKg: 12000, priceLkr: 280, emoji: '🧅' },
+  { id: 'anuradhapura', name: 'Anuradhapura Grain Storage', district: 'Anuradhapura', lat: 8.3114, lng: 80.4037, type: 'origin', produce: 'Nadu & Samba Rice Paddy', availableKg: 45000, priceLkr: 140, emoji: '🌾' },
+  { id: 'trincomalee', name: 'Trincomalee Eastern Hub', district: 'Trincomalee', lat: 8.5874, lng: 81.2152, type: 'hub', produce: 'Corn, Cassava & Groundnut', availableKg: 18000, priceLkr: 190, emoji: '🌽' },
+  { id: 'polonnaruwa', name: 'Polonnaruwa Paddy Grid', district: 'Polonnaruwa', lat: 7.9403, lng: 81.0188, type: 'origin', produce: 'Keeri Samba Paddy', availableKg: 35000, priceLkr: 145, emoji: '🌾' },
+  { id: 'dambulla', name: 'Dambulla Dedicated Economic Center', district: 'Dambulla', lat: 7.8731, lng: 80.6517, type: 'market', produce: 'National Vegetable Wholesale Center', availableKg: 85000, priceLkr: 110, emoji: '🏬' },
+  { id: 'nuwara-eliya', name: 'Nuwara Eliya Highlands', district: 'Nuwara Eliya', lat: 6.9497, lng: 80.7891, type: 'origin', produce: 'Export Grade Leeks, Carrots & Potatoes', availableKg: 28000, priceLkr: 135, emoji: '🥕' },
+  { id: 'keppetipola', name: 'Keppetipola Economic Center', district: 'Badulla', lat: 6.9022, lng: 80.9168, type: 'hub', produce: 'Beetroot, Cabbage & Beans', availableKg: 19500, priceLkr: 120, emoji: '🥬' },
+  { id: 'monaragala', name: 'Monaragala Agri Zone', district: 'Monaragala', lat: 6.8726, lng: 81.3507, type: 'origin', produce: 'Green Chili & Maize', availableKg: 14000, priceLkr: 320, emoji: '🌶️' },
+  { id: 'colombo', name: 'Pettah Wholesale & Manning Market', district: 'Colombo', lat: 6.9360, lng: 79.8530, type: 'market', produce: 'Commercial Distribution & B2B Escrow Center', availableKg: 120000, priceLkr: 150, emoji: '🏢' },
+  { id: 'welisara', name: 'Welisara Logistics Hub', district: 'Gampaha', lat: 7.0080, lng: 79.8970, type: 'hub', produce: 'Refrigerated Cold Storage & Freight Logistics', availableKg: 50000, priceLkr: 0, emoji: '🚚' },
+];
+
+// Tile layer URLs based on mapStyle mode (100% Free, No API Key Required)
+const getTileUrlAndAttribution = (style: 'vector' | 'satellite' | 'routes') => {
+  switch (style) {
+    case 'satellite':
+      return {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attribution: '&copy; Esri World Imagery &mdash; Source: Esri, Maxar, Earthstar Geographics'
+      };
+    case 'routes':
+      return {
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      };
+    case 'vector':
+    default:
+      return {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+      };
+  }
+};
+
 export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeShipment, onSelectListing }) => {
   const [selectedHubId, setSelectedHubId] = useState<string | null>('nuwara-eliya');
   const [mapStyle, setMapStyle] = useState<'vector' | 'satellite' | 'routes'>('vector');
@@ -44,43 +80,7 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
   const markersRef = useRef<any[]>([]);
   const polylinesRef = useRef<any[]>([]);
 
-  // Real GPS Coordinates for Sri Lanka Agricultural Hubs & Markets
-  const hubs: MapHub[] = [
-    { id: 'jaffna', name: 'Jaffna Agrarian Hub', district: 'Jaffna', lat: 9.6615, lng: 80.0255, type: 'origin', produce: 'Jaffna Red Onions & Bananas', availableKg: 12000, priceLkr: 280, emoji: '🧅' },
-    { id: 'anuradhapura', name: 'Anuradhapura Grain Storage', district: 'Anuradhapura', lat: 8.3114, lng: 80.4037, type: 'origin', produce: 'Nadu & Samba Rice Paddy', availableKg: 45000, priceLkr: 140, emoji: '🌾' },
-    { id: 'trincomalee', name: 'Trincomalee Eastern Hub', district: 'Trincomalee', lat: 8.5874, lng: 81.2152, type: 'hub', produce: 'Corn, Cassava & Groundnut', availableKg: 18000, priceLkr: 190, emoji: '🌽' },
-    { id: 'polonnaruwa', name: 'Polonnaruwa Paddy Grid', district: 'Polonnaruwa', lat: 7.9403, lng: 81.0188, type: 'origin', produce: 'Keeri Samba Paddy', availableKg: 35000, priceLkr: 145, emoji: '🌾' },
-    { id: 'dambulla', name: 'Dambulla Dedicated Economic Center', district: 'Dambulla', lat: 7.8731, lng: 80.6517, type: 'market', produce: 'National Vegetable Wholesale Center', availableKg: 85000, priceLkr: 110, emoji: '🏬' },
-    { id: 'nuwara-eliya', name: 'Nuwara Eliya Highlands', district: 'Nuwara Eliya', lat: 6.9497, lng: 80.7891, type: 'origin', produce: 'Export Grade Leeks, Carrots & Potatoes', availableKg: 28000, priceLkr: 135, emoji: '🥕' },
-    { id: 'keppetipola', name: 'Keppetipola Economic Center', district: 'Badulla', lat: 6.9022, lng: 80.9168, type: 'hub', produce: 'Beetroot, Cabbage & Beans', availableKg: 19500, priceLkr: 120, emoji: '🥬' },
-    { id: 'monaragala', name: 'Monaragala Agri Zone', district: 'Monaragala', lat: 6.8726, lng: 81.3507, type: 'origin', produce: 'Green Chili & Maize', availableKg: 14000, priceLkr: 320, emoji: '🌶️' },
-    { id: 'colombo', name: 'Pettah Wholesale & Manning Market', district: 'Colombo', lat: 6.9360, lng: 79.8530, type: 'market', produce: 'Commercial Distribution & B2B Escrow Center', availableKg: 120000, priceLkr: 150, emoji: '🏢' },
-    { id: 'welisara', name: 'Welisara Logistics Hub', district: 'Gampaha', lat: 7.0080, lng: 79.8970, type: 'hub', produce: 'Refrigerated Cold Storage & Freight Logistics', availableKg: 50000, priceLkr: 0, emoji: '🚚' },
-  ];
-
   const selectedHub = hubs.find((h) => h.id === selectedHubId) || hubs[5];
-
-  // Tile layer URLs based on mapStyle mode (100% Free, No API Key Required)
-  const getTileUrlAndAttribution = (style: 'vector' | 'satellite' | 'routes') => {
-    switch (style) {
-      case 'satellite':
-        return {
-          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          attribution: '&copy; Esri World Imagery &mdash; Source: Esri, Maxar, Earthstar Geographics'
-        };
-      case 'routes':
-        return {
-          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        };
-      case 'vector':
-      default:
-        return {
-          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-          attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
-        };
-    }
-  };
 
   // Initialize Leaflet Map
   useEffect(() => {
@@ -104,7 +104,7 @@ export const SriLankaMap: React.FC<SriLankaMapProps> = ({ listings = [], activeS
       attributionControl: false,
     });
 
-    const { url, attribution } = getTileUrlAndAttribution(mapStyle);
+    const { url, attribution } = getTileUrlAndAttribution('vector');
     const initialTileLayer = L.tileLayer(url, { attribution, maxZoom: 19 }).addTo(map);
     tileLayerRef.current = initialTileLayer;
 
