@@ -8,7 +8,7 @@ html {
 
 body {
   overflow-x: hidden;
-  touch-action: manipulation;
+  overflow-y: auto;
 }
 
 @layer utilities {
@@ -57,4 +57,40 @@ body {
     background: #ffffff !important;
     color: #000000 !important;
   }
+}
+
+/* Bulletproof Google Translate top banner suppression */
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame,
+iframe[id*=":1.container"],
+iframe[id*="google"],
+.VIpgJd-ZVi9I-OR9QNe-HandL,
+.VIpgJd-yAWNEb-VIpgJd-fmcmS-sn54Q,
+#goog-gt-tt,
+.goog-te-balloon-frame,
+.goog-te-gadget,
+.goog-tooltip,
+.goog-tooltip:hover {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0px !important;
+  max-height: 0px !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  pointer-events: none !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+#google_translate_element {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }

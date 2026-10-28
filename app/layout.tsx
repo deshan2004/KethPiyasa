@@ -5,15 +5,13 @@ import { AppProvider } from '@/lib/store';
 import { AuthProvider } from '@/lib/auth';
 import { Navbar } from '@/components/Navbar';
 import { MarketPriceTicker } from '@/components/MarketPriceTicker';
+import { GoogleTranslate } from '@/components/GoogleTranslate';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'KethPiyasa - Direct Farmer-to-Buyer B2B Agricultural Marketplace',
   description: 'Direct Farmer-to-Buyer B2B Marketplace Platform in Sri Lanka. Connect farmers directly with commercial buyers, bulk crop listings, advance harvest bookings, and escrow payments.',
-  other: {
-    google: 'notranslate',
-  },
   icons: {
     icon: [
       { url: '/logo.png', type: 'image/png' },
@@ -30,24 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" translate="no" className="notranslate">
-      <head>
-        <meta name="google" content="notranslate" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=" + location.hostname + "; path=/;";
-                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=." + location.hostname + "; path=/;";
-              } catch(e) {}
-            `,
-          }}
-        />
-      </head>
-      <body className={`${inter.className} bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-[#064e3b] selection:text-white notranslate`}>
+    <html lang="en">
+      <body className={`${inter.className} bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-[#064e3b] selection:text-white`}>
         <AppProvider>
           <AuthProvider>
+            <GoogleTranslate />
             <Navbar />
             <MarketPriceTicker />
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6">

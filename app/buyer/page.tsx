@@ -250,7 +250,7 @@ export default function BuyerPage() {
   const pendingOffersCount = offers.filter(o => o.status === 'pending' || o.status === 'countered').length;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 pb-12">
+    <div className="flex flex-col lg:flex-row gap-6 pb-12 w-full max-w-full">
       {/* Left Navigation Sidebar */}
       <aside className="w-full lg:w-64 bg-white border border-slate-200 rounded-2xl p-4 space-y-6 shadow-2xs shrink-0">
         {/* Profile Info */}
@@ -369,7 +369,7 @@ export default function BuyerPage() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 space-y-6">
+      <main className="flex-1 min-w-0 space-y-6">
         {/* Header Title */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
           <div>
@@ -446,7 +446,7 @@ export default function BuyerPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {marketPrices.slice(0, 4).map((mp) => (
                   <div key={mp.id} className="bg-slate-800/80 border border-slate-700/70 p-3 rounded-xl space-y-1">
                     <div className="flex justify-between items-start">
