@@ -5,7 +5,6 @@ import { AppProvider } from '@/lib/store';
 import { AuthProvider } from '@/lib/auth';
 import { Navbar } from '@/components/Navbar';
 import { MarketPriceTicker } from '@/components/MarketPriceTicker';
-import { GoogleTranslate } from '@/components/GoogleTranslate';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -32,7 +31,6 @@ export default function RootLayout({
       <body className={`${inter.className} bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-[#064e3b] selection:text-white`}>
         <AppProvider>
           <AuthProvider>
-            <GoogleTranslate />
             <Navbar />
             <MarketPriceTicker />
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6">

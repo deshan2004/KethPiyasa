@@ -26,10 +26,22 @@ export default function HomePage() {
   const t = getTranslation(lang);
   const [selectedListing, setSelectedListing] = useState<ProduceListing | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'pre_harvest' | 'immediate'>('all');
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
 
   const filteredListings = listings.filter((item) => {
-    if (activeTab === 'pre_harvest') return item.isPreHarvest;
-    if (activeTab === 'immediate') return !item.isPreHarvest;
+    if (activeTab === 'pre_harvest' && !item.isPreHarvest) return false;
+    if (activeTab === 'immediate' && item.isPreHarvest) return false;
+    if (selectedDistrict) {
+      const d = item.locationDistrict.toLowerCase();
+      const h = item.locationHub.toLowerCase();
+      const s = selectedDistrict.toLowerCase();
+      const matches = 
+        d.includes(s) || 
+        h.includes(s) || 
+        (s.includes('dambulla') && (d.includes('matale') || h.includes('dambulla'))) ||
+        (s.includes('colombo') && (d.includes('colombo') || d.includes('gampaha')));
+      if (!matches) return false;
+    }
     return true;
   });
 
@@ -147,7 +159,11 @@ export default function HomePage() {
 
       {/* Sri Lanka Distribution Map */}
       <section id="agri-map" className="space-y-4">
-        <SriLankaMap listings={listings} onSelectListing={(l) => setSelectedListing(l)} />
+        <SriLankaMap 
+          listings={listings} 
+          onSelectListing={(l) => setSelectedListing(l)}
+          onFilterDistrict={(district) => setSelectedDistrict(district)}
+        />
       </section>
 
       {/* Active Wholesale Listings */}
@@ -158,31 +174,47 @@ export default function HomePage() {
             <p className="text-xs text-slate-500">Directly sourced from verified farmers across Sri Lankan agricultural hubs</p>
           </div>
 
-          <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 text-xs shadow-2xs">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                activeTab === 'all' ? 'bg-[#064e3b] text-white shadow' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              All Listings
-            </button>
-            <button
-              onClick={() => setActiveTab('pre_harvest')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                activeTab === 'pre_harvest' ? 'bg-amber-600 text-white shadow' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Pre-Harvest Forward Contracts
-            </button>
-            <button
-              onClick={() => setActiveTab('immediate')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                activeTab === 'immediate' ? 'bg-teal-600 text-white shadow' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Ready Stock
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedDistrict && (
+              <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 text-[#064e3b] px-3 py-1.5 rounded-xl text-xs font-bold shadow-2xs">
+                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Hub/District: {selectedDistrict}</span>
+                <button
+                  onClick={() => setSelectedDistrict(null)}
+                  className="ml-1 text-emerald-700 hover:text-red-600 font-extrabold cursor-pointer"
+                  title="Clear District Filter"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 text-xs shadow-2xs">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  activeTab === 'all' ? 'bg-[#064e3b] text-white shadow' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                All Listings
+              </button>
+              <button
+                onClick={() => setActiveTab('pre_harvest')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  activeTab === 'pre_harvest' ? 'bg-amber-600 text-white shadow' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Pre-Harvest
+              </button>
+              <button
+                onClick={() => setActiveTab('immediate')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  activeTab === 'immediate' ? 'bg-teal-600 text-white shadow' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Ready Stock
+              </button>
+            </div>
           </div>
         </div>
 
