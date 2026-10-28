@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { EscrowContract } from '@/lib/types';
-import { FileText, Printer, CheckCircle2, ShieldCheck, Download, X, QrCode } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import { FileText, Printer, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 
 interface InvoiceModalProps {
   contract: EscrowContract;
@@ -10,6 +11,19 @@ interface InvoiceModalProps {
 }
 
 export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose }) => {
+  const [isQrEnlarged, setIsQrEnlarged] = useState(false);
+
+  useEffect(() => {
+    if (!isQrEnlarged) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsQrEnlarged(false);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isQrEnlarged]);
+
   const handlePrint = () => {
     window.print();
   };
@@ -110,9 +124,22 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
           {/* Summary Breakdown & Escrow Barcode QR */}
           <div className="flex flex-wrap items-center justify-between border-t border-slate-800 pt-4 gap-6">
             {/* QR Code Verification Box */}
-            <div className="flex items-center gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <button
+              type="button"
+              onClick={() => setIsQrEnlarged(true)}
+              aria-label="Open QR verification code"
+              aria-haspopup="dialog"
+              aria-expanded={isQrEnlarged}
+              className="flex items-center gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800 text-left transition-colors hover:border-emerald-500/60 hover:bg-slate-950/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            >
               <div className="w-16 h-16 bg-white p-1 rounded-lg flex items-center justify-center shadow-inner">
-                <QrCode className="w-full h-full text-slate-950" />
+                <QRCodeSVG
+                  value={contract.qrVerificationCode}
+                  size={56}
+                  level="M"
+                  marginSize={4}
+                  title="QR verification code"
+                />
               </div>
               <div className="text-xs">
                 <p className="font-bold text-white flex items-center gap-1">
@@ -120,8 +147,9 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
                 </p>
                 <p className="font-mono text-[11px] text-slate-400 mt-0.5">{contract.qrVerificationCode}</p>
                 <p className="text-[10px] text-slate-500 mt-1">Scan upon transport drop-off for payment release</p>
+                <p className="text-[10px] text-emerald-400 mt-1">Click to enlarge</p>
               </div>
-            </div>
+            </button>
 
             {/* Calculations */}
             <div className="w-full sm:w-64 space-y-2 text-xs">
@@ -150,6 +178,42 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
           This digital invoice is cryptographically secured by KethPiyasa Escrow Guarantee Engine.
         </div>
       </div>
+
+      {isQrEnlarged && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 print:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="QR verification code"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setIsQrEnlarged(false);
+          }}
+        >
+          <div className="relative w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 text-center shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setIsQrEnlarged(false)}
+              aria-label="Close enlarged QR code"
+              className="absolute right-3 top-3 rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <p className="text-sm font-bold text-white">QR Verification Code</p>
+            <p className="mt-1 text-xs text-slate-400">Scan to verify this escrow invoice</p>
+            <div className="mx-auto mt-5 w-fit rounded-2xl bg-white p-3 shadow-lg shadow-black/20">
+              <QRCodeSVG
+                value={contract.qrVerificationCode}
+                size={240}
+                level="M"
+                marginSize={4}
+                title="Enlarged QR verification code"
+              />
+            </div>
+            <p className="mt-4 break-all font-mono text-xs text-slate-300">{contract.qrVerificationCode}</p>
+            <p className="mt-2 text-[11px] text-slate-500">Press Esc or click outside to close</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
