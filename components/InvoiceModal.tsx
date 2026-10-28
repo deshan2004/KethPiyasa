@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { EscrowContract } from '@/lib/types';
 import { QRCodeSVG } from 'qrcode.react';
 import { FileText, Printer, Download, CheckCircle2, ShieldCheck, X } from 'lucide-react';
@@ -16,6 +17,11 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
   const { lang } = useApp();
   const t = getTranslation(lang);
   const [isQrEnlarged, setIsQrEnlarged] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -36,14 +42,20 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
     window.print();
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div 
+      id="invoice-modal-overlay"
       className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-md flex justify-center items-start p-3 sm:p-6 overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-4 sm:my-8 animate-in fade-in zoom-in-95 duration-200 relative flex flex-col">
+      <div 
+        id="invoice-modal-card"
+        className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-4 sm:my-8 animate-in fade-in zoom-in-95 duration-200 relative flex flex-col"
+      >
         {/* Sticky Modal Header */}
         <div className="sticky top-0 z-20 bg-slate-950 px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-800 flex items-center justify-between shadow-md print:hidden">
           <div className="flex items-center gap-2">
@@ -165,7 +177,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
                 </p>
                 <p className="font-mono text-[11px] text-slate-400 mt-0.5">{contract.qrVerificationCode}</p>
                 <p className="text-[10px] text-slate-500 mt-1">Scan upon transport drop-off for payment release</p>
-                <p className="text-[10px] text-emerald-400 mt-1">Click to enlarge</p>
+                <p className="text-[10px] text-emerald-400 mt-1 print:hidden">Click to enlarge</p>
               </div>
             </button>
 
@@ -248,6 +260,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({ contract, onClose })
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
