@@ -503,8 +503,14 @@ export default function FarmerPage() {
                               {item.grade}
                             </span>
                           </td>
-                          <td className="p-3 font-semibold text-slate-700">{item.quantityKg.toLocaleString()} Kg</td>
-                          <td className="p-3 font-black text-[#064e3b]">LKR {item.pricePerKg}</td>
+                          <td className="p-3">
+                            <span className="font-semibold text-slate-800 block">{item.quantityKg.toLocaleString()} Kg</span>
+                            <span className="text-[10px] text-amber-700 font-bold block">Min: {(item.minOrderQtyKg || 500).toLocaleString()} Kg</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-black text-[#064e3b] block">LKR {item.pricePerKg}</span>
+                            <span className="text-[10px] text-slate-500 font-semibold block">Total: LKR {(item.quantityKg * item.pricePerKg).toLocaleString()}</span>
+                          </td>
                           <td className="p-3 text-slate-600 font-mono text-[11px]">{item.harvestDate}</td>
                           <td className="p-3">
                             {item.isPreHarvest ? (
@@ -767,8 +773,14 @@ export default function FarmerPage() {
                           {item.grade}
                         </span>
                       </td>
-                      <td className="p-3 font-bold text-slate-800">{item.quantityKg.toLocaleString()} Kg</td>
-                      <td className="p-3 font-black text-[#064e3b]">LKR {item.pricePerKg}/kg</td>
+                      <td className="p-3">
+                        <span className="font-bold text-slate-800 block">{item.quantityKg.toLocaleString()} Kg</span>
+                        <span className="text-[10px] text-amber-700 font-bold block">Min: {(item.minOrderQtyKg || 500).toLocaleString()} Kg</span>
+                      </td>
+                      <td className="p-3">
+                        <span className="font-black text-[#064e3b] block">LKR {item.pricePerKg}/kg</span>
+                        <span className="text-[10px] text-slate-500 font-semibold block">Total: LKR {(item.quantityKg * item.pricePerKg).toLocaleString()}</span>
+                      </td>
                       <td className="p-3 text-slate-600">{item.locationHub}</td>
                       <td className="p-3 text-slate-700 font-mono text-[11px]">{item.harvestDate}</td>
                       <td className="p-3">
@@ -1059,15 +1071,35 @@ export default function FarmerPage() {
                 </div>
               </div>
 
-              {/* Quantity, Price & Harvest Date */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Quantity, Min Order Qty, Price & Harvest Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
                   <label className="text-slate-700 font-semibold block mb-1">{t.quantityKg}</label>
                   <input
                     type="number"
                     min="1"
                     value={quantityKg}
-                    onChange={(e) => setQuantityKg(Number(e.target.value))}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setQuantityKg(val);
+                      if (minOrderQtyKg > val) setMinOrderQtyKg(val);
+                    }}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-700 font-semibold">{t.minOrderQty || 'Min Order Qty (Kg)'}</label>
+                    <span className="text-[10px] text-slate-400 font-bold">Max: {quantityKg}</span>
+                  </div>
+                  <input
+                    type="number"
+                    min="1"
+                    max={quantityKg}
+                    value={minOrderQtyKg}
+                    onChange={(e) => setMinOrderQtyKg(Math.min(quantityKg, Math.max(1, Number(e.target.value))))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
                     required
                   />
@@ -1100,17 +1132,24 @@ export default function FarmerPage() {
               </div>
 
               {/* Live Listing Total Estimated Batch Value */}
-              <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-xl p-3 flex items-center justify-between text-xs">
+              <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2">
                   <Calculator className="w-4 h-4 text-[#064e3b]" />
-                  <span className="font-semibold text-slate-700">{t.estimatedBatchValue || 'Estimated Total Batch Value'}:</span>
-                  <span className="text-[11px] text-slate-500">
-                    ({(quantityKg || 0).toLocaleString()} Kg × LKR {(pricePerKg || 0).toLocaleString()})
+                  <div>
+                    <span className="font-semibold text-slate-700">{t.estimatedBatchValue || 'Estimated Total Batch Value'}: </span>
+                    <span className="text-[11px] text-slate-500">
+                      ({(quantityKg || 0).toLocaleString()} Kg × LKR {(pricePerKg || 0).toLocaleString()})
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-[11px] font-bold text-amber-800 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded-md">
+                    Min Order: {(minOrderQtyKg || 0).toLocaleString()} Kg
+                  </span>
+                  <span className="font-black text-sm text-[#064e3b]">
+                    LKR {((quantityKg || 0) * (pricePerKg || 0)).toLocaleString()}
                   </span>
                 </div>
-                <span className="font-black text-sm text-[#064e3b]">
-                  LKR {((quantityKg || 0) * (pricePerKg || 0)).toLocaleString()}
-                </span>
               </div>
 
               {/* Pre-harvest option */}

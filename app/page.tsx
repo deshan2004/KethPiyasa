@@ -246,9 +246,14 @@ export default function HomePage() {
                   <span className="flex items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded text-slate-800 border border-slate-200">
                     <MapPin className="w-3.5 h-3.5 text-[#064e3b]" /> {item.locationDistrict}
                   </span>
-                  <span className="bg-white/90 backdrop-blur-md px-2 py-1 rounded text-[#064e3b] font-bold border border-slate-200">
-                    {item.quantityKg.toLocaleString()} Kg
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="bg-white/90 backdrop-blur-md px-2 py-1 rounded text-[#064e3b] font-bold border border-slate-200">
+                      {item.quantityKg.toLocaleString()} Kg
+                    </span>
+                    <span className="bg-amber-100/95 backdrop-blur-md px-2 py-1 rounded text-amber-900 font-bold border border-amber-300 text-[10px]">
+                      Min: {(item.minOrderQtyKg || 500).toLocaleString()} Kg
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -274,8 +279,13 @@ export default function HomePage() {
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] text-slate-500 block uppercase font-bold">Baseline Price</span>
-                    <span className="text-lg font-extrabold text-[#064e3b]">LKR {item.pricePerKg}</span>
-                    <span className="text-[10px] text-slate-500">/Kg</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-lg font-extrabold text-[#064e3b]">LKR {item.pricePerKg}</span>
+                      <span className="text-[10px] text-slate-500">/Kg</span>
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-700 block mt-0.5">
+                      Total: LKR {(item.quantityKg * item.pricePerKg).toLocaleString()}
+                    </span>
                   </div>
 
                   <Link

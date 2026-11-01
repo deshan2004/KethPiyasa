@@ -551,17 +551,27 @@ export default function BuyerPage() {
                           <Phone className="w-3 h-3" /> Contact Farmer
                         </button>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
+                      <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] pt-1 border-t border-slate-100">
                         <span className="text-slate-600 font-semibold">Ready Date: <span className="font-mono text-slate-900">{item.harvestDate}</span></span>
-                        <span className="text-slate-600 font-bold bg-slate-100 px-2 py-0.5 rounded">{item.quantityKg.toLocaleString()} kg</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-600 font-bold bg-slate-100 px-2 py-0.5 rounded">{item.quantityKg.toLocaleString()} kg</span>
+                          <span className="text-amber-800 font-bold bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-[10px]">
+                            Min: {(item.minOrderQtyKg || 500).toLocaleString()} kg
+                          </span>
+                        </div>
                       </div>
                     </div>
 
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                       <div>
                         <span className="text-[10px] text-slate-400 block uppercase font-bold">Baseline Price</span>
-                        <span className="text-lg font-black text-[#064e3b]">LKR {item.pricePerKg}</span>
-                        <span className="text-[9px] text-slate-500">/Kg</span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-lg font-black text-[#064e3b]">LKR {item.pricePerKg}</span>
+                          <span className="text-[9px] text-slate-500">/Kg</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-600 block">
+                          Total: LKR {(item.quantityKg * item.pricePerKg).toLocaleString()}
+                        </span>
                       </div>
 
                       <div className="flex gap-1.5">
