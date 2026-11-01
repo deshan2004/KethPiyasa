@@ -50,7 +50,10 @@ import {
   Store,
   FileCheck,
   Phone,
-  Calculator
+  Calculator,
+  Edit,
+  Trash2,
+  Save
 } from 'lucide-react';
 
 export default function FarmerPage() {
@@ -58,6 +61,8 @@ export default function FarmerPage() {
   const {
     listings,
     addListing,
+    updateListing,
+    deleteListing,
     offers,
     respondToOffer,
     contracts,
@@ -76,6 +81,26 @@ export default function FarmerPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [invoiceModalContract, setInvoiceModalContract] = useState<EscrowContract | null>(null);
+
+  // Edit & Delete Listing States
+  const [editFormData, setEditFormData] = useState<{
+    id: string;
+    title: string;
+    cropType: string;
+    grade: QualityGrade;
+    quantityKg: number;
+    pricePerKg: number;
+    minOrderQtyKg: number;
+    harvestDate: string;
+    locationDistrict: string;
+    locationHub: string;
+    isPreHarvest: boolean;
+    organicCertified: boolean;
+    moistureContent: string;
+    description: string;
+    photoUrl: string;
+  } | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   
   // Counter Offer Modal State
   const [selectedOfferForCounter, setSelectedOfferForCounter] = useState<NegotiationOffer | null>(null);
@@ -206,6 +231,55 @@ export default function FarmerPage() {
     setTitle('');
     setDescription('');
     setActiveTab('listings');
+  };
+
+  const handleOpenEdit = (item: ProduceListing) => {
+    setEditFormData({
+      id: item.id,
+      title: item.title,
+      cropType: item.cropType,
+      grade: item.grade,
+      quantityKg: item.quantityKg,
+      pricePerKg: item.pricePerKg,
+      minOrderQtyKg: item.minOrderQtyKg || 500,
+      harvestDate: item.harvestDate,
+      locationDistrict: item.locationDistrict,
+      locationHub: item.locationHub,
+      isPreHarvest: item.isPreHarvest,
+      organicCertified: item.organicCertified,
+      moistureContent: item.moistureContent || 'Standard',
+      description: item.description,
+      photoUrl: item.photos && item.photos.length > 0 ? item.photos[0] : '/leeks.jpg',
+    });
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editFormData) return;
+    const finalCrop = editFormData.cropType.trim() || 'Produce';
+    updateListing(editFormData.id, {
+      title: editFormData.title.trim() || `${editFormData.grade} ${finalCrop} (${editFormData.locationDistrict})`,
+      cropType: finalCrop,
+      grade: editFormData.grade,
+      quantityKg: editFormData.quantityKg,
+      pricePerKg: editFormData.pricePerKg,
+      minOrderQtyKg: Math.min(editFormData.quantityKg, Math.max(1, editFormData.minOrderQtyKg)),
+      harvestDate: editFormData.harvestDate,
+      locationDistrict: editFormData.locationDistrict,
+      locationHub: editFormData.locationHub,
+      isPreHarvest: editFormData.isPreHarvest,
+      organicCertified: editFormData.organicCertified,
+      moistureContent: editFormData.moistureContent,
+      description: editFormData.description,
+      photos: [editFormData.photoUrl || '/leeks.jpg'],
+      status: editFormData.quantityKg > 0 ? 'active' : 'sold',
+    });
+    setEditFormData(null);
+  };
+
+  const handleDeleteListing = (id: string) => {
+    deleteListing(id);
+    setDeleteConfirmId(null);
   };
 
   const handleOpenCounterModal = (offer: NegotiationOffer) => {
@@ -486,10 +560,11 @@ export default function FarmerPage() {
                         <th className="p-3">{t.pricePerKg}</th>
                         <th className="p-3">{t.harvestDate}</th>
                         <th className="p-3">Status</th>
+                        <th className="p-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {listings.slice(0, 4).map((item) => (
+                      {listings.slice(0, 6).map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="p-3 font-bold text-slate-900 flex items-center gap-2">
                             <img src={item.photos[0]} alt={item.title} className="w-8 h-8 rounded-lg object-cover border border-slate-200" onError={handleImageError} />
@@ -526,6 +601,24 @@ export default function FarmerPage() {
                                 Ready Stock
                               </span>
                             )}
+                          </td>
+                          <td className="p-3 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handleOpenEdit(item)}
+                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-[#064e3b] transition-all cursor-pointer"
+                                title="Edit Listing"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirmId(item.id)}
+                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition-all cursor-pointer"
+                                title="Delete Listing"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -760,6 +853,7 @@ export default function FarmerPage() {
                     <th className="p-3">{t.harvestDate}</th>
                     <th className="p-3">Certifications</th>
                     <th className="p-3">Status</th>
+                    <th className="p-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -810,6 +904,24 @@ export default function FarmerPage() {
                             READY STOCK
                           </span>
                         )}
+                      </td>
+                      <td className="p-3 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleOpenEdit(item)}
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-[#064e3b] text-[#064e3b] hover:text-white font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer"
+                            title="Edit Listing"
+                          >
+                            <Edit className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(item.id)}
+                            className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white transition-all cursor-pointer"
+                            title="Delete Listing"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1326,6 +1438,319 @@ export default function FarmerPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDIT CROP LISTING MODAL */}
+      {editFormData && (
+        <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-slate-200 w-full max-w-xl rounded-2xl shadow-xl overflow-hidden animate-in fade-in duration-200 my-auto">
+            <div className="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Edit className="w-4 h-4 text-[#064e3b]" />
+                  <h3 className="font-bold text-slate-900 text-sm">Edit Crop Listing</h3>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">ID: {editFormData.id}</span>
+              </div>
+              <button onClick={() => setEditFormData(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="p-5 space-y-4 text-xs max-h-[80vh] overflow-y-auto">
+              {/* Crop Variety & Title */}
+              <div>
+                <label className="text-slate-700 font-semibold block mb-1">
+                  {t.cropType} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.cropType}
+                  onChange={(e) => setEditFormData({ ...editFormData, cropType: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-[#064e3b] focus:bg-white focus:outline-none rounded-xl px-3 py-2 font-semibold text-slate-800"
+                  required
+                />
+                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span className="text-[10px] text-slate-400 font-medium">Quick Select:</span>
+                  {['Leeks', 'Carrots', 'Paddy', 'Tomatoes', 'Green Chili', 'Red Onion', 'Potato', 'Pumpkin', 'Beans'].map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setEditFormData({ ...editFormData, cropType: item })}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
+                        editFormData.cropType === item
+                          ? 'bg-[#064e3b] text-white shadow-2xs'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-700 font-semibold block mb-1">
+                  Listing Title
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                  placeholder="e.g. Grade A Washed Carrots (Nuwara Eliya)"
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-[#064e3b] focus:bg-white focus:outline-none rounded-xl px-3 py-2 font-semibold text-slate-800"
+                />
+              </div>
+
+              {/* Quality Grade & Location District */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.gradeLabel}</label>
+                  <select
+                    value={editFormData.grade}
+                    onChange={(e) => setEditFormData({ ...editFormData, grade: e.target.value as QualityGrade })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                  >
+                    <option value="Grade A">{t.gradeA}</option>
+                    <option value="Grade B">{t.gradeB}</option>
+                    <option value="Grade C">{t.gradeC}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.locationDistrict}</label>
+                  <select
+                    value={editFormData.locationDistrict}
+                    onChange={(e) => setEditFormData({
+                      ...editFormData,
+                      locationDistrict: e.target.value,
+                      locationHub: `${e.target.value} Agri Hub`
+                    })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                  >
+                    <option value="Nuwara Eliya">Nuwara Eliya</option>
+                    <option value="Dambulla">Dambulla</option>
+                    <option value="Badulla">Badulla</option>
+                    <option value="Jaffna">Jaffna</option>
+                    <option value="Polonnaruwa">Polonnaruwa</option>
+                    <option value="Matale">Matale</option>
+                    <option value="Hambantota">Hambantota</option>
+                    <option value="Gampaha">Gampaha</option>
+                    <option value="Kandy">Kandy</option>
+                    <option value="Puttalam">Puttalam</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Quantity, Min Order Qty, Price & Harvest Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.quantityKg}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editFormData.quantityKg}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setEditFormData({
+                        ...editFormData,
+                        quantityKg: val,
+                        minOrderQtyKg: Math.min(val, editFormData.minOrderQtyKg || 500)
+                      });
+                    }}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-700 font-semibold">{t.minOrderQty || 'Min Qty (Kg)'}</label>
+                    <span className="text-[10px] text-slate-400 font-bold">Max: {editFormData.quantityKg}</span>
+                  </div>
+                  <input
+                    type="number"
+                    min="1"
+                    max={editFormData.quantityKg || 1}
+                    value={editFormData.minOrderQtyKg}
+                    onChange={(e) => setEditFormData({
+                      ...editFormData,
+                      minOrderQtyKg: Math.min(editFormData.quantityKg, Math.max(1, Number(e.target.value)))
+                    })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.pricePerKg} (LKR)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={editFormData.pricePerKg}
+                    onChange={(e) => setEditFormData({ ...editFormData, pricePerKg: Number(e.target.value) })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-700 font-semibold block mb-1">{t.harvestDate}</label>
+                  <input
+                    type="date"
+                    value={editFormData.harvestDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, harvestDate: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Dynamic Calculation Summary */}
+              <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-[#064e3b]" />
+                  <div>
+                    <span className="font-semibold text-slate-700">Estimated Total Batch Value: </span>
+                    <span className="text-[11px] text-slate-500">
+                      ({(editFormData.quantityKg || 0).toLocaleString()} Kg × LKR {(editFormData.pricePerKg || 0).toLocaleString()})
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-[11px] font-bold text-amber-800 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded-md">
+                    Min Order: {(editFormData.minOrderQtyKg || 0).toLocaleString()} Kg
+                  </span>
+                  <span className="font-black text-sm text-[#064e3b]">
+                    LKR {((editFormData.quantityKg || 0) * (editFormData.pricePerKg || 0)).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Pre-harvest option */}
+              <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800 block text-xs">{t.isPreHarvest}</span>
+                  <span className="text-[10px] text-slate-500">Allow buyers to contract crop before harvesting</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editFormData.isPreHarvest}
+                    onChange={(e) => setEditFormData({ ...editFormData, isPreHarvest: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#064e3b]"></div>
+                </label>
+              </div>
+
+              {/* GAP Certification Option */}
+              <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800 block text-xs">GAP / Organic Certified</span>
+                  <span className="text-[10px] text-slate-500">Good Agricultural Practices certification badge</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editFormData.organicCertified}
+                    onChange={(e) => setEditFormData({ ...editFormData, organicCertified: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#064e3b]"></div>
+                </label>
+              </div>
+
+              {/* Photo Selector */}
+              <div>
+                <label className="text-slate-700 font-semibold block mb-1">Crop Photo</label>
+                <div className="grid grid-cols-6 gap-2">
+                  {[
+                    { name: 'Leeks', url: '/leeks.jpg' },
+                    { name: 'Carrots', url: '/carrot.jpg' },
+                    { name: 'Paddy', url: '/samba.jpg' },
+                    { name: 'Tomatoes', url: '/tomato.jpeg' },
+                    { name: 'Chili', url: '/chili.jpg' },
+                    { name: 'Onion', url: '/onion.jpg' },
+                  ].map((p) => (
+                    <button
+                      key={p.name}
+                      type="button"
+                      onClick={() => setEditFormData({ ...editFormData, photoUrl: p.url })}
+                      className={`relative rounded-lg overflow-hidden border-2 h-12 transition-all cursor-pointer ${
+                        editFormData.photoUrl === p.url ? 'border-[#064e3b] ring-2 ring-emerald-500' : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={p.url} alt={p.name} className="w-full h-full object-cover" onError={handleImageError} />
+                      <span className="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[8px] font-medium text-center py-0.5 truncate px-1">
+                        {p.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-slate-700 font-semibold block mb-1">{t.cropDescription}</label>
+                <textarea
+                  rows={2}
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                  placeholder="Mention quality, packaging, moisture..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditFormData(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all cursor-pointer"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  type="submit"
+                  className="bg-[#064e3b] hover:bg-[#043e2f] text-white font-bold px-5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Save className="w-4 h-4" /> Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: DELETE CONFIRMATION MODAL */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 w-full max-w-sm rounded-2xl shadow-2xl p-5 space-y-4 text-center animate-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-slate-900 text-sm">Delete Crop Listing?</h3>
+              <p className="text-xs text-slate-500">
+                Are you sure you want to delete this listing? It will be permanently removed from your active stock and the buyer marketplace.
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 py-2 px-3 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteListing(deleteConfirmId)}
+                className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm cursor-pointer"
+              >
+                Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

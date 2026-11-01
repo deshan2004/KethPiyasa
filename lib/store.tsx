@@ -20,11 +20,15 @@ interface AppContextType {
   setLang: (lang: Language) => void;
   listings: ProduceListing[];
   addListing: (listing: Omit<ProduceListing, 'id' | 'status' | 'farmerId' | 'totalValueLkr'>) => void;
+  updateListing: (id: string, updatedFields: Partial<ProduceListing>) => void;
+  deleteListing: (id: string) => void;
   offers: NegotiationOffer[];
   createOffer: (listingId: string, targetQtyKg: number, offeredPricePerKg: number, deliveryDate: string, note: string) => void;
   respondToOffer: (offerId: string, action: 'accept' | 'reject' | 'counter', counterPrice?: number, counterQty?: number, note?: string) => void;
   contracts: EscrowContract[];
   depositEscrow: (contractId: string) => void;
+  releaseEscrow: (contractId: string) => void;
+  refundEscrow: (contractId: string) => void;
   shipments: ShipmentJob[];
   updateShipmentStatus: (shipmentId: string, status: ShipmentJob['status'], locationName?: string) => void;
   verifyDeliveryQr: (shipmentId: string) => void;
@@ -497,6 +501,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveState('kp_listings', updated);
   };
 
+  const updateListing = (id: string, updatedFields: Partial<ProduceListing>) => {
+    const updated = listings.map((l) => {
+      if (l.id !== id) return l;
+      const next = { ...l, ...updatedFields };
+      if (updatedFields.quantityKg !== undefined || updatedFields.pricePerKg !== undefined) {
+        const qty = updatedFields.quantityKg !== undefined ? updatedFields.quantityKg : l.quantityKg;
+        const price = updatedFields.pricePerKg !== undefined ? updatedFields.pricePerKg : l.pricePerKg;
+        next.totalValueLkr = qty * price;
+      }
+      return next;
+    });
+    setListings(updated);
+    saveState('kp_listings', updated);
+  };
+
+  const deleteListing = (id: string) => {
+    const updated = listings.filter((l) => l.id !== id);
+    setListings(updated);
+    saveState('kp_listings', updated);
+  };
+
   const createOffer = (listingId: string, targetQtyKg: number, offeredPricePerKg: number, deliveryDate: string, note: string) => {
     const listing = listings.find((l) => l.id === listingId);
     if (!listing) return;
@@ -685,6 +710,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveState('kp_contracts', updatedContracts);
   };
 
+  const releaseEscrow = (contractId: string) => {
+    const updatedContracts = contracts.map((c) => (c.id === contractId ? { ...c, status: 'released' as const } : c));
+    setContracts(updatedContracts);
+    saveState('kp_contracts', updatedContracts);
+  };
+
+  const refundEscrow = (contractId: string) => {
+    const updatedContracts = contracts.map((c) => (c.id === contractId ? { ...c, status: 'refunded' as const } : c));
+    setContracts(updatedContracts);
+    saveState('kp_contracts', updatedContracts);
+  };
+
   const updateShipmentStatus = (shipmentId: string, status: ShipmentJob['status'], locationName?: string) => {
     const updatedShipments = shipments.map((s) => {
       if (s.id !== shipmentId) return s;
@@ -768,11 +805,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setLang,
         listings,
         addListing,
+        updateListing,
+        deleteListing,
         offers,
         createOffer,
         respondToOffer,
         contracts,
         depositEscrow,
+        releaseEscrow,
+        refundEscrow,
         shipments,
         updateShipmentStatus,
         verifyDeliveryQr,
