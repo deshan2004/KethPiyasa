@@ -168,6 +168,7 @@ export default function BuyerPage() {
 
   // Filter listings
   const filteredListings = listings.filter((item) => {
+    if (item.status === 'sold' || item.quantityKg <= 0) return false;
     const matchesSearch =
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.cropType.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -180,7 +181,8 @@ export default function BuyerPage() {
 
   const handleOpenBidding = (item: ProduceListing) => {
     setBiddingModalListing(item);
-    setTargetQty(item.minOrderQtyKg || 500);
+    const initialQty = Math.min(item.quantityKg, item.minOrderQtyKg || 500);
+    setTargetQty(initialQty);
     setOfferedPrice(item.pricePerKg);
   };
 

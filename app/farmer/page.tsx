@@ -513,7 +513,11 @@ export default function FarmerPage() {
                           </td>
                           <td className="p-3 text-slate-600 font-mono text-[11px]">{item.harvestDate}</td>
                           <td className="p-3">
-                            {item.isPreHarvest ? (
+                            {item.status === 'sold' || item.quantityKg <= 0 ? (
+                              <span className="bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full text-[10px] border border-slate-300">
+                                Sold Out
+                              </span>
+                            ) : item.isPreHarvest ? (
                               <span className="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full text-[10px] border border-amber-200">
                                 Pre-Harvest
                               </span>
@@ -793,7 +797,11 @@ export default function FarmerPage() {
                         )}
                       </td>
                       <td className="p-3">
-                        {item.isPreHarvest ? (
+                        {item.status === 'sold' || item.quantityKg <= 0 ? (
+                          <span className="bg-slate-200 text-slate-700 font-bold px-2.5 py-0.5 rounded-full text-[10px] border border-slate-300">
+                            SOLD OUT
+                          </span>
+                        ) : item.isPreHarvest ? (
                           <span className="bg-amber-100 text-amber-900 font-bold px-2.5 py-0.5 rounded-full text-[10px] border border-amber-300">
                             PRE-HARVEST
                           </span>

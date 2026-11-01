@@ -29,6 +29,7 @@ export default function HomePage() {
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
 
   const filteredListings = listings.filter((item) => {
+    if (item.status === 'sold' || item.quantityKg <= 0) return false;
     if (activeTab === 'pre_harvest' && !item.isPreHarvest) return false;
     if (activeTab === 'immediate' && item.isPreHarvest) return false;
     if (selectedDistrict) {

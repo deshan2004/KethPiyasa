@@ -602,6 +602,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return next;
         });
 
+        // Deduct accepted order volume from listing stock (Partial/Full order fulfillment)
+        setListings((prevListings) => {
+          const nextListings = prevListings.map((l) => {
+            if (l.id !== off.listingId) return l;
+
+            const remainingQty = Math.max(0, l.quantityKg - off.targetQtyKg);
+            const isSoldOut = remainingQty <= 0;
+            const updatedMinOrder = isSoldOut ? 0 : Math.min(l.minOrderQtyKg || remainingQty, remainingQty);
+            const updatedTotalValue = remainingQty * l.pricePerKg;
+
+            return {
+              ...l,
+              quantityKg: remainingQty,
+              totalValueLkr: updatedTotalValue,
+              minOrderQtyKg: updatedMinOrder,
+              status: isSoldOut ? ('sold' as const) : ('active' as const),
+            };
+          });
+          saveState('kp_listings', nextListings);
+          return nextListings;
+        });
+
       } else if (action === 'reject') {
         newStatus = 'rejected';
         newMessages.push({
@@ -612,6 +634,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           quantityKg: off.targetQtyKg,
           note: note || 'Offer declined.',
           timestamp: new Date().toLocaleString(),
+        });
+
+        // If no other pending/countered offers exist for this listing, restore to active
+        setListings((prevListings) => {
+          const hasOtherPending = offers.some(
+            (o) => o.id !== offerId && o.listingId === off.listingId && (o.status === 'pending' || o.status === 'countered')
+          );
+          if (!hasOtherPending) {
+            const nextListings = prevListings.map((l) =>
+              l.id === off.listingId && l.status === 'negotiating' && l.quantityKg > 0
+                ? { ...l, status: 'active' as const }
+                : l
+            );
+            saveState('kp_listings', nextListings);
+            return nextListings;
+          }
+          return prevListings;
         });
       } else if (action === 'counter' && counterPrice) {
         newStatus = 'countered';
